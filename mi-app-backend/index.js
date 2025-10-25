@@ -6,6 +6,7 @@ import { supabase } from './dbConfig.js'
 import session from 'express-session'
 import Keycloak from 'keycloak-connect'
 import axios from 'axios'
+import stockRoutes from './Rutas/indexStock.js'
 
 const app = express()
 const PORT = process.env.PORT 
@@ -28,7 +29,9 @@ app.use(keycloak.middleware({
 app.use(cors())
 app.use(express.json());
 
-
+// ============= RUTAS MODULARES =============
+// Usar el router de Stock (protegido por Keycloak)
+app.use('/api', keycloak.protect(), stockRoutes)
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -98,108 +101,6 @@ app.get('/auth/perfil', keycloak.protect(), async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' })
   }
 })
-
-// ============= RUTAS DE PRODUCTOS (Protegidas) =============
-
-// EndPoint para listar productos
-app.get('/productos', keycloak.protect(), async (req, res) => {
-  const { data, error } = await supabase.from('productos').select('*')
-  
-  if (error) {
-    return res.status(500).json({ error: error.message })
-  }
-
-  res.status(200).json(data)
-})
-
-// EndPoint para crear producto
-app.post('/productos', keycloak.protect(), async (req, res) => {
-  try {
-    const { nombre, descripcion, precio, stock } = req.body
-
-    const { data, error } = await supabase
-      .from('productos')
-      .insert([{ nombre, descripcion, precio, stock }])
-      .select()
-      .single() 
-
-    if (error) {
-      return res.status(400).json({ error: error.message })
-    }
-
-    res.status(201).json(data)
-  } catch (error) {
-    console.error('Error al crear producto:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-// EndPoint para actualizar producto
-app.put('/productos/:id', keycloak.protect(), async (req, res) => {
-  try {
-    const { id } = req.params
-    const { nombre, descripcion, precio, stock } = req.body
-
-    // Validar que al menos venga un campo para actualizar
-    const camposParaActualizar = {};
-    if (nombre !== undefined) camposParaActualizar.nombre = nombre;
-    if (descripcion !== undefined) camposParaActualizar.descripcion = descripcion;
-    if (precio !== undefined) camposParaActualizar.precio = precio;
-    if (stock !== undefined) camposParaActualizar.stock = stock;
-    
-    if (Object.keys(camposParaActualizar).length === 0) {
-      return res.status(400).json({ error: 'Se requiere al menos un campo para actualizar' });
-    }
-
-    const { data, error } = await supabase
-      .from('productos')
-      .update(camposParaActualizar)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) {
-      return res.status(400).json({ error: error.message })
-    }
-
-    if (!data) {
-      return res.status(404).json({ error: 'Producto no encontrado' })
-    }
-
-    res.status(200).json(data)
-  } catch (error) {
-    console.error('Error al actualizar producto:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-// EndPoint para eliminar producto
-app.delete('/productos/:id', keycloak.protect(), async (req, res) => {
-  try {
-    const { id } = req.params
-
-    const { data, error } = await supabase
-      .from('productos')
-      .delete()
-      .eq('id', id)
-      .select() 
-      .single()
-
-    if (error) {
-      return res.status(400).json({ error: error.message })
-    }
-
-    if (!data) {
-      return res.status(404).json({ error: 'Producto no encontrado' });
-    }
-
-    res.status(200).json({ message: 'Producto eliminado exitosamente' })
-  } catch (error) {
-    console.error('Error al eliminar producto:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
 
 // ============= RUTAS DE RESERVAS (Protegidas) =============
 // Estas son las rutas clave para Logística
@@ -345,117 +246,6 @@ app.delete('/reservas/:id', keycloak.protect(), async (req, res) => {
 
   } catch (error) {
     console.error('Error al cancelar reserva:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-
-// ============= RUTAS DE CATEGORÍAS (Protegidas) =============
-
-// Listar todas las categorías
-app.get('/categorias', keycloak.protect(), async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('categorias').select('*')
-    if (error) throw error;
-    res.status(200).json(data)
-  } catch (error) {
-    console.error('Error al listar categorías:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-// Crear una nueva categoría
-app.post('/categorias', keycloak.protect(), async (req, res) => {
-  try {
-    const { nombre, descripcion } = req.body
-    if (!nombre) return res.status(400).json({ error: 'El campo "nombre" es requerido' })
-    
-    const { data, error } = await supabase
-      .from('categorias')
-      .insert([{ nombre, descripcion }])
-      .select()
-      .single()
-
-    if (error) throw error;
-    res.status(201).json(data)
-
-  } catch (error) {
-    console.error('Error al crear categoría:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-// Obtener una categoría por ID
-app.get('/categorias/:id', keycloak.protect(), async (req, res) => {
-  try {
-    const { id } = req.params
-    const { data, error } = await supabase
-      .from('categorias')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Categoría no encontrada' })
-
-    res.status(200).json(data)
-
-  } catch (error) {
-    console.error('Error al obtener categoría:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-// Actualizar una categoría
-app.patch('/categorias/:id', keycloak.protect(), async (req, res) => {
-  try {
-    const { id } = req.params
-    const { nombre, descripcion } = req.body
-
-    const camposActualizados = {}
-    if (nombre) camposActualizados.nombre = nombre;
-    if (descripcion) camposActualizados.descripcion = descripcion;
-    
-    if (Object.keys(camposActualizados).length === 0) {
-      return res.status(400).json({ error: 'Se requiere al menos un campo para actualizar' });
-    }
-
-    const { data, error } = await supabase
-      .from('categorias')
-      .update(camposActualizados)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Categoría no encontrada' })
-    
-    res.status(200).json(data)
-
-  } catch (error) {
-    console.error('Error al actualizar categoría:', error)
-    res.status(500).json({ error: 'Error interno del servidor' })
-  }
-})
-
-// Eliminar una categoría
-app.delete('/categorias/:id', keycloak.protect(), async (req, res) => {
-  try {
-    const { id } = req.params
-    const { data, error } = await supabase
-      .from('categorias')
-      .delete()
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Categoría no encontrada' })
-
-    res.status(204).send()
-
-  } catch (error) {
-    console.error('Error al eliminar categoría:', error)
     res.status(500).json({ error: 'Error interno del servidor' })
   }
 })
