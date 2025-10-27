@@ -1,0 +1,354 @@
+// --- archivo: servicios/reservas.servicio.js ---
+
+// Importamos el cliente de Supabase que creamos
+import supabase from '../dbConfig.js';
+
+
+/**
+ * Servicio para crear una nueva reserva en la base de datos.
+ * Recibe los datos ya validados por el controlador.
+ */
+const crearNuevaReserva = async (datosReserva) => {
+  const { idCompra, usuarioId, productos } = datosReserva;
+
+  // --- PASO A: Insertar la reserva principal ---
+  // Insertamos en la tabla 'reservas' y usamos .select() 
+  // para que Supabase nos devuelva la fila recién creada.
+  const { data: reservaData, error: reservaError } = await supabase
+    .from('reservas') // El nombre de tu tabla en Supabase
+    .insert({
+      id_compra: idCompra,  // Asumiendo que tu columna se llama 'id_compra'
+      usuario_id: usuarioId // Asumiendo que tu columna se llama 'usuario_id'
+    })
+    .select() // ¡Importante! Para que nos devuelva el registro creado
+    .single(); // Nos aseguramos de que devuelva un solo objeto, no un array
+
+  // Manejo de error si falla la inserción principal
+  if (reservaError) {
+    console.error('Error al insertar reserva principal:', reservaError);
+    // 'throw' envía el error al 'catch' del controlador
+    throw new Error(reservaError.message); 
+  }
+
+  // Obtenemos el ID de la reserva recién creada
+  const nuevaReservaId = reservaData.id;
+
+  // --- PASO B: Preparar los productos para insertar ---
+  // Debemos asociar cada producto con el ID de la reserva que acabamos de crear.
+  const productosParaInsertar = productos.map(producto => ({
+    reserva_id: nuevaReservaId,   // El ID que vincula a la tabla 'reservas'
+    producto_id: producto.idProducto,
+    cantidad: producto.cantidad
+  }));
+
+  // --- PASO C: Insertar todos los productos ---
+  // Insertamos el array de productos en la tabla 'reservas_productos'
+  const { data: productosData, error: productosError } = await supabase
+    .from('reservas_productos') // El nombre de tu tabla de productos
+    .insert(productosParaInsertar)
+    .select(); // Devolvemos los productos insertados
+
+  // Manejo de error si falla la inserción de productos
+  if (productosError) {
+    console.error('Error al insertar productos de la reserva:', productosError);
+    // NOTA IMPORTANTE: ¡Esto es un riesgo! La reserva principal quedó creada
+    // pero sus productos fallaron. (Más sobre esto abajo)
+    throw new Error(productosError.message);
+  }
+
+  // --- PASO D: Devolver el objeto completo ---
+  // Si todo salió bien, devolvemos la reserva completa con sus productos.
+  return {
+    ...reservaData, // Contiene id, id_compra, usuario_id, fecha_creacion
+    productos: productosData // Contiene el array de productos insertados
+  };
+};
+
+
+
+
+//Funcion para traducir de Camel a Snake
+const _mapReservaToOutput = (data) => {
+  // Si no hay datos, devuelve null
+  if (!data) return null;
+
+  // Transforma de snake_case (BD) a camelCase (API)
+  return {
+    idReserva: data.id, // Asumiendo que la PK en Supabase es 'id'
+    idCompra: data.id_compra,
+    usuarioId: data.usuario_id,
+    estado: data.estado,
+    expiresAt: data.expires_at,       // Asumiendo columna 'expires_at'
+    fechaCreacion: data.fecha_creacion // Asumiendo columna 'fecha_creacion'
+  };
+};
+
+
+
+/**
+ * ======================================================
+ * HELPER: Mapea datos de la BD a 'ReservaCompleta' (NUEVO)
+ * ======================================================
+ * Transforma la respuesta anidada de Supabase al
+ * formato plano que espera la API (ReservaCompleta).
+ */
+const _mapReservaCompleta = (data) => {
+  if (!data) return null;
+
+  // Mapeamos el array de productos anidados
+  const productosMapeados = data.reservas_productos.map(item => {
+    // 'item' es de la tabla 'reservas_productos'
+    // 'item.productos' es el JOIN con la tabla 'productos'
+    return {
+      idProducto: item.productos.id,
+      nombre: item.productos.nombre,
+      cantidad: item.cantidad, // La cantidad viene de 'reservas_productos'
+      precioUnitario: item.productos.precio_unitario
+    };
+  });
+
+  // Mapeamos la reserva principal
+  return {
+    idReserva: data.id,
+    idCompra: data.id_compra,
+    usuarioId: data.usuario_id,
+    estado: data.estado,
+    expiresAt: data.expires_at,
+    fechaCreacion: data.fecha_creacion,
+    fechaActualizacion: data.fecha_actualizacion, // El nuevo campo
+    productos: productosMapeados // El nuevo array de productos
+  };
+};
+
+/**
+ * ======================================================
+ * Servicio para BUSCAR UNA reserva por ID (ACTUALIZADO)
+ * ======================================================
+ * Ahora usa un JOIN para traer los detalles de los productos.
+ */
+const buscarReservaPorId = async (id) => {
+  // 1. Consultar a Supabase con JOIN
+  // Esta sintaxis de 'select' anidado es cómo Supabase hace JOINs.
+  // ¡Requiere que tengas las Foreign Keys configuradas en Supabase!
+  const { data, error } = await supabase
+    .from('reservas')
+    .select(`
+      id,
+      id_compra,
+      usuario_id,
+      estado,
+      expires_at,
+      fecha_creacion,
+      fecha_actualizacion,
+      reservas_productos (
+        cantidad,
+        productos (
+          id,
+          nombre,
+          precio_unitario
+        )
+      )
+    `)
+    .eq('id', id)
+    .single();
+
+  // 2. Manejar error de Supabase
+  if (error && error.code !== 'PGRST116') { // Ignora 'No rows found'
+    console.error('Error en Supabase al buscar reserva completa:', error);
+    throw new Error(error.message);
+  }
+
+  // 3. Mapear y devolver
+  // Usamos el nuevo helper para transformar la data
+  return _mapReservaCompleta(data);
+};
+
+/**
+ * ======================================================
+ * Servicio para BUSCAR TODAS las reservas de un usuario
+ * ======================================================
+ * Incluye filtros y paginación.
+ */
+const buscarReservasPorUsuario = async (filtros) => {
+  const { usuarioId, estado, page, limit } = filtros;
+
+  // 1. Construir la consulta de Supabase
+  // Empezamos con la misma consulta de JOIN que antes
+  let query = supabase
+    .from('reservas')
+    .select(`
+      id, id_compra, usuario_id, estado, expires_at,
+      fecha_creacion, fecha_actualizacion,
+      reservas_productos (
+        cantidad,
+        productos ( id, nombre, precio_unitario )
+      )
+    `);
+  
+  // 2. Aplicar Filtros Obligatorios
+  query = query.eq('usuario_id', usuarioId);
+
+  // 3. Aplicar Filtros Opcionales
+  if (estado) {
+    query = query.eq('estado', estado);
+  }
+
+  // 4. Aplicar Paginación
+  // (Asumiendo valores por defecto si no se proveen)
+  const pageNum = page || 1;
+  const pageSize = limit || 10;
+  const offset = (pageNum - 1) * pageSize;
+  
+  query = query.range(offset, offset + pageSize - 1);
+
+  // 5. Ejecutar la consulta
+  const { data, error } = await query;
+
+  // 6. Manejar error
+  if (error) {
+    console.error('Error en Supabase al listar reservas:', error);
+    throw new Error(error.message);
+  }
+
+  // 7. Mapear CADA resultado
+  // 'data' es un array. Usamos .map() para transformar
+  // cada objeto del array usando el helper que ya teníamos.
+  return data.map(_mapReservaCompleta);
+};
+
+/**
+ * ======================================================
+ * Servicio para ACTUALIZAR EL ESTADO de una reserva
+ * ======================================================
+ */
+const actualizarEstadoReserva = async (idReserva, usuarioId, nuevoEstado) => {
+  // 1. Intentar actualizar la reserva
+  const { data, error } = await supabase
+    .from('reservas')
+    .update({ 
+      estado: nuevoEstado,
+      fecha_actualizacion: new Date().toISOString() // Actualizamos la fecha
+    })
+    .eq('id', idReserva)       // Donde el ID de reserva coincida
+    .eq('usuario_id', usuarioId) // Y donde el ID de usuario también coincida
+    .select('id') // Seleccionamos solo el 'id' para saber si se actualizó algo
+    .single();
+
+  // 2. Manejar error de Supabase
+  if (error) {
+    console.error('Error en Supabase al actualizar reserva:', error);
+    throw new Error(error.message);
+  }
+
+  // 3. Verificar si se actualizó algo
+  // Si 'data' es null, significa que la consulta .eq() no encontró
+  // ninguna fila que coincida (o la reserva no existe o no es de ese usuario).
+  if (!data) {
+    return null; // El controlador interpretará esto como un 404
+  }
+
+  // 4. Si se actualizó, buscar y devolver la reserva completa
+  // Reutilizamos la función que ya teníamos para devolver
+  // el objeto 'ReservaCompleta' como pide el OpenAPI.
+  return await buscarReservaPorId(idReserva);
+};
+
+
+
+/**
+ * ======================================================
+ * Servicio para CANCELAR una reserva Y LIBERAR STOCK
+ * ======================================================
+ * ¡Esta es una operación crítica de negocio!
+ */
+const cancelarReservaYLiberarStock = async (idReserva, motivo) => {
+
+  // --- PASO 1: Buscar la reserva y sus productos ---
+  // Necesitamos saber qué productos y qué cantidades liberar
+  const { data: reserva, error: errorBusqueda } = await supabase
+    .from('reservas')
+    .select(`
+      id,
+      estado,
+      reservas_productos (
+        producto_id,
+        cantidad
+      )
+    `)
+    .eq('id', idReserva)
+    .single();
+
+  // Manejar error o si no se encuentra
+  if (errorBusqueda) {
+    console.error('Error al buscar reserva para cancelar:', errorBusqueda);
+    // Si 'data' es null (PGRST116), significa 404
+    if (errorBusqueda.code === 'PGRST116') {
+      return { success: false, status: 404, mensaje: "Reserva no encontrada." };
+    }
+    throw new Error(errorBusqueda.message);
+  }
+
+  // Verificar si ya está cancelada
+  if (reserva.estado === 'cancelado') {
+    return { success: false, status: 400, mensaje: "La reserva ya fue cancelada." };
+  }
+  
+  const productosARelevar = reserva.reservas_productos;
+
+  // --- PASO 2: Liberar el stock (incrementar) ---
+  // Por cada producto en la reserva, ejecutamos una función RPC
+  // que incrementa el stock de forma atómica.
+  // (Esto asume que creaste una función 'incrementar_stock' en tu BD de Supabase)
+  
+  if (productosARelevar && productosARelevar.length > 0) {
+    // Creamos un array de promesas
+    const promesasStock = productosARelevar.map(item =>
+      supabase.rpc('incrementar_stock', {
+        id_producto_in: item.producto_id,
+        cantidad_in: item.cantidad
+      })
+    );
+    
+    // Ejecutamos todas las promesas en paralelo
+    const resultados = await Promise.all(promesasStock);
+
+    // Revisar si alguna falló (esto es una simplificación)
+    for (const res of resultados) {
+      if (res.error) {
+        console.error('¡FALLO CRÍTICO! Error al liberar stock:', res.error);
+        throw new Error(`Error al liberar stock para producto ${res.producto_id}: ${res.error.message}`);
+        // ¡Aquí es donde una transacción real de BD salvaría el día!
+      }
+    }
+  }
+
+  // --- PASO 3: Actualizar el estado de la reserva ---
+  const { error: errorUpdate } = await supabase
+    .from('reservas')
+    .update({
+      estado: 'cancelado',
+      motivo_cancelacion: motivo, // Asumiendo que tienes una columna para esto
+      fecha_actualizacion: new Date().toISOString()
+    })
+    .eq('id', idReserva);
+
+  if (errorUpdate) {
+    console.error('Error al actualizar estado de reserva a cancelado:', errorUpdate);
+    throw new Error(errorUpdate.message);
+  }
+
+  // Si todo salió bien
+  return { success: true, status: 204 };
+};
+
+
+
+
+// --------------EXPORTS-------------------
+export default {
+  crearNuevaReserva,
+  buscarReservaPorId,
+  buscarReservasPorUsuario,
+  actualizarEstadoReserva,
+  cancelarReservaYLiberarStock
+};
