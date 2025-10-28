@@ -1,67 +1,39 @@
-// --- archivo: servicios/reservas.servicio.js ---
+
 
 // Importamos el cliente de Supabase que creamos
 import supabase from '../dbConfig.js';
 
 
 /**
- * Servicio para crear una nueva reserva en la base de datos.
- * Recibe los datos ya validados por el controlador.
+ * ======================================================
+ * Servicio para CREAR una nueva reserva (¡ACTUALIZADO!)
+ * ======================================================
+ * Llama a la función RPC 'crear_reserva_y_descontar_stock'
+ * para ejecutar la transacción en la base de datos.
  */
 const crearNuevaReserva = async (datosReserva) => {
   const { idCompra, usuarioId, productos } = datosReserva;
 
-  // --- PASO A: Insertar la reserva principal ---
-  // Insertamos en la tabla 'reservas' y usamos .select() 
-  // para que Supabase nos devuelva la fila recién creada.
-  const { data: reservaData, error: reservaError } = await supabase
-    .from('reservas') // El nombre de tu tabla en Supabase
-    .insert({
-      id_compra: idCompra,  // Asumiendo que tu columna se llama 'id_compra'
-      usuario_id: usuarioId // Asumiendo que tu columna se llama 'usuario_id'
-    })
-    .select() // ¡Importante! Para que nos devuelva el registro creado
-    .single(); // Nos aseguramos de que devuelva un solo objeto, no un array
+  // 1. Llamar a la función RPC
+  // El nombre debe coincidir EXACTAMENTE con el del SQL
+  const { data, error } = await supabase.rpc('crear_reserva_y_descontar_stock', {
+    id_compra_in: idCompra,
+    usuario_id_in: usuarioId,
+    productos_in: productos // Pasamos el array de productos directamente
+  })
+  .single(); // Esperamos que la función devuelva una sola fila (la nueva reserva)
 
-  // Manejo de error si falla la inserción principal
-  if (reservaError) {
-    console.error('Error al insertar reserva principal:', reservaError);
-    // 'throw' envía el error al 'catch' del controlador
-    throw new Error(reservaError.message); 
+  // 2. Manejar errores
+  if (error) {
+    console.error('Error en RPC al crear reserva:', error);
+    // Errores de 'RAISE EXCEPTION' (como "Stock insuficiente")
+    // vendrán en 'error.message'.
+    throw new Error(error.message);
   }
 
-  // Obtenemos el ID de la reserva recién creada
-  const nuevaReservaId = reservaData.id;
-
-  // --- PASO B: Preparar los productos para insertar ---
-  // Debemos asociar cada producto con el ID de la reserva que acabamos de crear.
-  const productosParaInsertar = productos.map(producto => ({
-    reserva_id: nuevaReservaId,   // El ID que vincula a la tabla 'reservas'
-    producto_id: producto.idProducto,
-    cantidad: producto.cantidad
-  }));
-
-  // --- PASO C: Insertar todos los productos ---
-  // Insertamos el array de productos en la tabla 'reservas_productos'
-  const { data: productosData, error: productosError } = await supabase
-    .from('reservas_productos') // El nombre de tu tabla de productos
-    .insert(productosParaInsertar)
-    .select(); // Devolvemos los productos insertados
-
-  // Manejo de error si falla la inserción de productos
-  if (productosError) {
-    console.error('Error al insertar productos de la reserva:', productosError);
-    // NOTA IMPORTANTE: ¡Esto es un riesgo! La reserva principal quedó creada
-    // pero sus productos fallaron. (Más sobre esto abajo)
-    throw new Error(productosError.message);
-  }
-
-  // --- PASO D: Devolver el objeto completo ---
-  // Si todo salió bien, devolvemos la reserva completa con sus productos.
-  return {
-    ...reservaData, // Contiene id, id_compra, usuario_id, fecha_creacion
-    productos: productosData // Contiene el array de productos insertados
-  };
+  // 3. Devolver la reserva en el formato 'ReservaOutput'
+  // La RPC devuelve la fila de la BD, la mapeamos al formato de la API
+  return _mapReservaToOutput(data);
 };
 
 
