@@ -1,4 +1,4 @@
-// --- archivo: rutas/productos.rutas.js ---
+
 
 import express from 'express';
 const router = express.Router();
