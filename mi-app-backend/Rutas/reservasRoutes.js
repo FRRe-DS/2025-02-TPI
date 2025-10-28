@@ -1,4 +1,4 @@
-// --- archivo: rutas/reservas.rutas.js ---
+
 
 import express from 'express';
 const router = express.Router(); // Obtenemos el "enrutador" de Express
@@ -49,6 +49,11 @@ router.patch('/:idReserva', reservasControlador.actualizarReserva);
  * operationId: cancelarReserva
  */
 router.delete('/:idReserva', reservasControlador.cancelarReserva);
+
+
+
+
+
 
 
 // 3. Exportamos el 'router'

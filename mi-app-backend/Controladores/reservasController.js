@@ -38,37 +38,47 @@ const crearReserva = async (req, res) => {
 /**
  * =======================================
  * Controlador para OBTENER UNA reserva por ID
+ * (¡ACTUALIZADO!)
  * =======================================
- * Ruta: GET /reservas/{id}
- * * Devuelve un objeto 'ReservaOutput'.
  */
 const obtenerReservaPorId = async (req, res) => {
   try {
-    // 1. Obtener el ID de los parámetros de la URL
+    // 1. Obtener ID de los parámetros (path)
     const { idReserva } = req.params;
 
-    // 2. Llamar al servicio
-    // El servicio se encarga de buscar Y de formatear la respuesta
-    const reserva = await servicioReservas.buscarReservaPorId(idReserva);
+    // 2. ¡NUEVO! Obtener usuarioId del query
+    const { usuarioId } = req.query;
 
-    // 3. Manejar "No Encontrado" (Not Found)
-    if (!reserva) {
-      // Si el servicio devuelve null, es un 404
-      // Tu openapi.yaml seguramente define esta respuesta
-      return res.status(404).json({ mensaje: `Reserva con ID ${idReserva} no encontrada.` });
+    // 3. ¡NUEVO! Validación de autorización
+    // (Según 'required: true' en el openapi.yaml)
+    if (!usuarioId) {
+      return res.status(400).json({ 
+        mensaje: "El parámetro 'usuarioId' es obligatorio en la consulta." 
+      });
     }
 
-    // 4. Respuesta de Éxito
-    // El objeto 'reserva' ya viene formateado exactamente como 'ReservaOutput'
+    // 4. Llamar al servicio con AMBOS IDs
+    const reserva = await servicioReservas.buscarReservaPorId(
+      idReserva, 
+      usuarioId
+    );
+
+    // 5. Manejar "No Encontrado"
+    // Ahora 'null' significa "No encontrado" O "No autorizado"
+    if (!reserva) {
+      return res.status(404).json({ 
+        mensaje: `Reserva con ID ${idReserva} no encontrada o no pertenece al usuario ${usuarioId}.` 
+      });
+    }
+
+    // 6. Respuesta de Éxito
     res.status(200).json(reserva);
 
   } catch (error) {
-    // 5. Manejo de Errores (ej. ID inválido, BD caída)
-    console.error(`Error al obtener reserva ${req.params.id}:`, error);
+    console.error(`Error al obtener reserva ${req.params.idReserva}:`, error);
     res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
   }
 };
-
 
 /**
  * =======================================
