@@ -18,6 +18,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "express-oauth2-jwt-bearer": "^1.7.1",
     "express-session": "^1.18.2",
     "keycloak-connect": "^26.1.1",
     "keycloak-js": "^26.2.1"
