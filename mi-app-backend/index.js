@@ -12,13 +12,17 @@ app.use(express.json());
 import reservasRouter from './Rutas/reservasRoutes.js';
 import productosRouter from './Rutas/productosRoutes.js';
 import categoriasRouter from './Rutas/categoriasRoutes.js';
+import authRouter from './Rutas/authRoutes.js';
 
 
 
 // --- Montar Rutas ---
 // Le decimos a Express: "Cualquier petición que empiece con '/api/v1/reservas',
 
+// Rutas de autenticación (sin prefijo /api)
+app.use('/auth', authRouter);
 
+// Rutas de API
 app.use('/api/v1/reservas', reservasRouter);
 app.use('/api/v1/productos', productosRouter);
 app.use('/api/v1/categorias',categoriasRouter);
