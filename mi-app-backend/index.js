@@ -42,7 +42,7 @@ app.use('/api/v1/categorias', categoriasRouter);
 //(HEALTH CHECK)
 // ===============================================
 app.get('/', (req, res) => {
-  res.status(200).json({ mensaje: '¡El servidor esta vivo! TESTI ES UN KPO' });
+  res.status(200).json({ mensaje: '¡El servidor esta vivo!' });
 });
 // ===============================================
 
