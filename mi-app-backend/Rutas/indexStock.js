@@ -2,6 +2,7 @@
 import express from 'express'
 import { supabase } from '../dbConfig.js'
 
+
 const router = express.Router()
 
 /**
@@ -111,7 +112,7 @@ router.get('/productos', async (req, res) => {
 // Crear producto
 router.post('/productos', async (req, res) => {
   try {
-    const { nombre, descripcion, precio, stock } = req.body
+    const { nombre, descripcion, precio, stock, categoriaId } = req.body
 
     if (!nombre || !precio) {
       return res.status(400).json({ error: 'Nombre y precio son requeridos' })
@@ -119,7 +120,7 @@ router.post('/productos', async (req, res) => {
 
     const { data, error } = await supabase
       .from('productos')
-      .insert([{ nombre, descripcion, precio, stock }])
+      .insert([{ nombre, descripcion, precio, stock, categoriaId }])
       .select()
       .single() 
 
@@ -393,5 +394,43 @@ router.delete('/categorias/:id', async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' })
   }
 })
+
+// GET Productos por Categoría
+router.get('/categorias/:id/productos', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('categoriaId', id);
+
+    if (error) throw error;
+    res.status(200).json(data);
+  } catch (e) {
+    res.status(500).json({ error: 'Error al listar productos de la categoría', detalle: e.message });
+  }
+});
+
+// Disponibilidad de stock (consultita rápida)
+router.get('/stock/disponibilidad', async (req, res) => {
+  try {
+    const { productoId, cantidad } = req.query;
+    if (!productoId || !cantidad) return res.status(400).json({ error: 'productoId y cantidad son requeridos' });
+
+    const { data, error } = await supabase
+      .from('productos')
+      .select('id, stock')
+      .eq('id', productoId)
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Producto no encontrado' });
+
+    const disponible = Number(data.stock) >= Number(cantidad);
+    res.json({ productoId: Number(productoId), requerido: Number(cantidad), stock: data.stock, disponible });
+  } catch (e) {
+    res.status(500).json({ error: 'Error al consultar disponibilidad', detalle: e.message });
+  }
+});
 
 export default router
