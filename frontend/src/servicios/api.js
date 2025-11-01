@@ -1,37 +1,44 @@
-//const API_URL = 'http://localhost:4000';
-/* Servicio para interactuar con la API del backend 
-export async function obtenerProductos() {
-  const res = await fetch(`${API_URL}/productos`);
-  return await res.json();
-}*/
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// URL base de la API
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 console.log('API_URL:', API_URL);
+
 import keycloak from '../lib/keycloak'; // tu instancia de keycloak
 
-/*
+/**
+ * Obtener lista de productos (catálogo público)
+ * Usa la ruta pública de compras
+ */
 export async function obtenerProductos() {
-  const res = await fetch(`${API_URL}/productos`);
-  if (!res.ok) throw new Error('Error al obtener productos');
-  return await res.json();
-} */
-
-export async function agregarProducto(producto) {
-  const res = await fetch(`${API_URL}/agregar-producto`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(producto)
+  const token = keycloak.token;
+  
+  // Usar la ruta de compras (pública o protegida según tu config)
+  const res = await fetch(`${API_URL}/api/compras/productos`, {
+    headers: token ? {
+      Authorization: `Bearer ${token}`,
+    } : {},
   });
+  
+  if (!res.ok) throw new Error('Error al obtener productos');
   return await res.json();
 }
 
-export async function obtenerProductos() {  //Esto hace que el backend reciba el token, lo valide con Keycloak y te devuelva los datos.
+/**
+ * Agregar un nuevo producto (para vendedores)
+ * Usa la ruta de stock (protegida)
+ */
+export async function agregarProducto(producto) {
   const token = keycloak.token;
-  const res = await fetch(`${API_URL}/productos`, {
+  
+  // Usar la ruta de stock para vendedores
+  const res = await fetch(`${API_URL}/api/stock/productos`, {
+    method: 'POST',
     headers: {
-      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
     },
+    body: JSON.stringify(producto)
   });
-  if (!res.ok) throw new Error('Error al obtener productos');
+  
+  if (!res.ok) throw new Error('Error al agregar producto');
   return await res.json();
 }

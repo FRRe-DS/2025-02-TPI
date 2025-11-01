@@ -11,9 +11,10 @@ const crearReserva = async (req, res) => {
       return res.status(400).json({ mensaje: "Petición incorrecta..." });
     }
     // ...más validaciones...
-    if (!Array.isArray(productos) || productos.length === 0) { /* ... */ }
+    if (!Array.isArray(productos) || productos.length === 0) { 
+      return res.status(400).json({ mensaje: "Productos debe ser un array no vacío" });
+    }
     // ...validación del 'for' de productos...
-
 
     // 3. LÓGICA DE NEGOCIO (¡Aquí está el cambio!)
     // Ya no simulamos. Llamamos al servicio con los datos validados.

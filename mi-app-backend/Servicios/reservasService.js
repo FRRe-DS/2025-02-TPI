@@ -14,25 +14,27 @@ import supabase from '../dbConfig.js';
 const crearNuevaReserva = async (datosReserva) => {
   const { idCompra, usuarioId, productos } = datosReserva;
 
-  // 1. Llamar a la función RPC
-  // El nombre debe coincidir EXACTAMENTE con el del SQL
+  // Transformar productos - Supabase RPC espera "idProducto" con camelCase
+  const productosTransformados = productos.map(p => ({
+    idProducto: p.productoId,
+    cantidad: p.cantidad
+  }));
+
+  // Llamar a la función RPC
   const { data, error } = await supabase.rpc('crear_reserva_y_descontar_stock', {
     id_compra_in: idCompra,
     usuario_id_in: usuarioId,
-    productos_in: productos // Pasamos el array de productos directamente
+    productos_in: productosTransformados
   })
-  .single(); // Esperamos que la función devuelva una sola fila (la nueva reserva)
+  .single();
 
-  // 2. Manejar errores
+  // Manejar errores
   if (error) {
     console.error('Error en RPC al crear reserva:', error);
-    // Errores de 'RAISE EXCEPTION' (como "Stock insuficiente")
-    // vendrán en 'error.message'.
     throw new Error(error.message);
   }
 
-  // 3. Devolver la reserva en el formato 'ReservaOutput'
-  // La RPC devuelve la fila de la BD, la mapeamos al formato de la API
+  // Devolver la reserva en el formato 'ReservaOutput'
   return _mapReservaToOutput(data);
 };
 

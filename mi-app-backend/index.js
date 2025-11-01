@@ -9,24 +9,37 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json()); 
 
 // --- Importar Rutas ---
-import reservasRouter from './Rutas/reservasRoutes.js';
-import productosRouter from './Rutas/productosRoutes.js';
-import categoriasRouter from './Rutas/categoriasRoutes.js';
 import authRouter from './Rutas/authRoutes.js';
+
+// Rutas separadas por consumidor
+import stockRouter from './Rutas/stock.routes.js';
+import comprasRouter from './Rutas/compras.routes.js';
+import logisticaRouter from './Rutas/logistica.routes.js';
 
 
 
 // --- Montar Rutas ---
-// Le decimos a Express: "Cualquier petición que empiece con '/api/v1/reservas',
 
-// Rutas de autenticación (sin prefijo /api)
+// ========================================
+// RUTAS DE AUTENTICACIÓN (Sin protección)
+// ========================================
 app.use('/auth', authRouter);
 
-// Rutas de API
-app.use('/api/v1/reservas', reservasRouter);
-app.use('/api/v1/productos', productosRouter);
-app.use('/api/v1/categorias',categoriasRouter);
-// app.use('/api/v1/productos', productosRouter);
+// ========================================
+// RUTAS SEPARADAS POR CONSUMIDOR
+// ========================================
+
+// Rutas para VENDEDORES (Gestión de inventario)
+// TODO: Agregar keycloak.protect('vendedor')
+app.use('/api/stock', stockRouter);
+
+// Rutas para PORTAL DE COMPRAS (Clientes)
+// Algunas públicas, otras protegidas
+app.use('/api/compras', comprasRouter);
+
+// Rutas para LOGÍSTICA (Transporte y entregas)
+// TODO: Agregar keycloak.protect('logistica')
+app.use('/api/logistica', logisticaRouter);
 // ===============================================
 
 
