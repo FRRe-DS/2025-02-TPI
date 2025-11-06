@@ -100,6 +100,24 @@ export default function FormularioProducto({ onProductoAgregado }: Props) {
       }
     }));
   };
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const catId = Number(e.target.value);
+    const isChecked = e.target.checked;
+
+    setFormData(prev => {
+      const currentCatIds = prev.categoriaIds || [];
+      let newCatIds: number[];
+
+      if (isChecked) {
+        // Añadir el ID al array
+        newCatIds = [...currentCatIds, catId];
+      } else {
+        // Quitar el ID del array
+        newCatIds = currentCatIds.filter(id => id !== catId);
+      }
+      return { ...prev, categoriaIds: newCatIds };
+    });
+  };
 
   // Manejador del envío
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,15 +193,25 @@ export default function FormularioProducto({ onProductoAgregado }: Props) {
             <input style={styles.input} type="text" name="descripcion" value={formData.descripcion} onChange={handleChange} />
           </div>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Categoría:</label>
-            <select style={styles.input} name="categoriaIds" value={formData.categoriaIds[0] || 0} onChange={handleChange} required>
-              <option value={0} disabled>Seleccione una categoría</option>
-              {categorias.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.nombre}</option>
-              ))}
-            </select>
+            <label style={styles.label}>Categorías:</label>
+            <div style={{ maxHeight: '100px', overflowY: 'auto', border: '1px solid #ddd', padding: '5px', backgroundColor: 'white' }}>
+              {categorias.length > 0 ? categorias.map(cat => (
+                <div key={cat.id}>
+                  <input
+                    type="checkbox"
+                    id={`cat-add-${cat.id}`}
+                    value={cat.id}
+                    onChange={handleCategoryChange}
+                    // El checkbox está marcado si el ID está en el array
+                    checked={formData.categoriaIds.includes(cat.id)}
+                  />
+                  <label htmlFor={`cat-add-${cat.id}`} style={{ marginLeft: '5px' }}>{cat.nombre}</label>
+                </div>
+              )) : <small>Cargando categorías...</small>}
+            </div>
           </div>
         </div>
+        
 
         {/* Sección Inventario */}
         <div style={styles.section}>

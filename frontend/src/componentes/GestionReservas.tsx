@@ -2,9 +2,15 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 // Importamos las funciones de la API
-import { obtenerReservas, crearReserva, cancelarReserva } from '../servicios/api';
+import { 
+  obtenerReservas, 
+  crearReserva, 
+  cancelarReserva,
+  actualizarReserva
+} from '../servicios/api';
 
-// 1. Definimos las interfaces (basadas en tu openapi.yaml)
+// --- INTERFACES (basadas en tu openapi.yaml) ---
+
 export interface ReservaProductoInput {
   idProducto: number;
   cantidad: number;
@@ -21,17 +27,20 @@ export interface ReservaCompleta {
   idCompra: string;
   usuarioId: number;
   estado: string;
-  // (Asegúrate de que la interfaz de producto coincida)
   productos: {
     idProducto: number;
     nombre: string;
     cantidad: number;
   }[];
 }
+// --- Fin de Interfaces ---
+
+// --- Constantes de Configuración ---
 
 // Hardcodeamos un ID de usuario para probar
 // (En el mundo real, vendría de la autenticación)
-const USUARIO_ID_PRUEBA = 1; // (Recuerda que creamos reservas para el usuario 1)
+const USUARIO_ID_PRUEBA = 1;
+const LIMIT_RESERVAS_POR_PAGINA = 5; // Límite para la paginación
 
 export default function GestionReservas() {
   const [reservas, setReservas] = useState<ReservaCompleta[]>([]);
@@ -42,12 +51,28 @@ export default function GestionReservas() {
   const [prodId, setProdId] = useState(''); // ID del producto a reservar
   const [prodCant, setProdCant] = useState(1); // Cantidad a reservar
 
+  // --- ESTADOS DE FILTRO Y PAGINACIÓN ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState(''); // '' = Todas
+
   // 2. Función para cargar las reservas
   const cargarReservas = () => {
     setCargando(true);
-    obtenerReservas(USUARIO_ID_PRUEBA)
+    
+    // Prepara el objeto de filtros para la API
+    const filtrosParaApi = {
+      usuarioId: USUARIO_ID_PRUEBA,
+      estado: filtroEstado,
+      page: currentPage,
+      limit: LIMIT_RESERVAS_POR_PAGINA
+    };
+
+    obtenerReservas(filtrosParaApi) // Pasa el objeto de filtros
       .then((res: ReservaCompleta[]) => {
         setReservas(res || []);
+        // Verifica si es la última página
+        setIsLastPage((res || []).length < LIMIT_RESERVAS_POR_PAGINA);
       })
       .catch(error => {
         console.error("Error al cargar reservas:", error);
@@ -58,10 +83,11 @@ export default function GestionReservas() {
       });
   };
 
-  // 3. Carga inicial de reservas
+  // 3. Carga inicial y recarga
+  // Se ejecuta si 'currentPage' o 'filtroEstado' cambian
   useEffect(() => {
     cargarReservas();
-  }, []);
+  }, [currentPage, filtroEstado]);
 
   // 4. Manejador para crear una reserva
   const handleCrearReserva = async (e: React.FormEvent) => {
@@ -85,8 +111,14 @@ export default function GestionReservas() {
       setIdCompra('');
       setProdId('');
       setProdCant(1);
-      // Recargamos la lista de reservas
-      cargarReservas();
+      
+      // Vuelve a la página 1 y recarga
+      setCurrentPage(1); 
+      // Si ya estábamos en la página 1, el useEffect no se dispara,
+      // así que forzamos la recarga (solo si ya estábamos en la pág 1)
+      if (currentPage === 1) {
+         cargarReservas();
+      }
     } catch (error) {
       alert((error as Error).message); // (Mostrará "Stock insuficiente" si falla)
     }
@@ -106,10 +138,33 @@ export default function GestionReservas() {
       await cancelarReserva(reservaId, motivo);
       alert('¡Reserva cancelada! (El stock ha sido liberado)');
       
-      // Actualizamos la lista en el frontend para reflejar el cambio
+      // Recarga la lista actual para reflejar el cambio
+      cargarReservas();
+      
+    } catch (error) {
+      alert((error as Error).message);
+    }
+  };
+
+  // 6. Manejador para confirmar una reserva
+  const handleConfirmarReserva = async (reservaId: number) => {
+    if (!window.confirm("¿Seguro que quieres confirmar esta reserva?")) {
+      return;
+    }
+    try {
+      // Llamamos a la API con el ID del usuario (para la verificación) y el nuevo estado
+      const reservaActualizada = await actualizarReserva(
+        reservaId, 
+        USUARIO_ID_PRUEBA, // El 'usuarioId' es requerido por el backend
+        'confirmado'       // El nuevo estado
+      );
+      
+      alert('¡Reserva confirmada!');
+      
+      // Actualizamos la lista local con la reserva actualizada
       setReservas(reservasActuales => 
         reservasActuales.map(res => 
-          res.idReserva === reservaId ? { ...res, estado: 'cancelado' } : res
+          res.idReserva === reservaId ? reservaActualizada : res
         )
       );
       
@@ -118,9 +173,22 @@ export default function GestionReservas() {
     }
   };
 
-  if (cargando) {
-    return <div>Cargando reservas...</div>;
-  }
+  // 7. Manejadores de Filtro y Paginación
+  const handleFiltroEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFiltroEstado(e.target.value);
+    setCurrentPage(1); // Resetea a la página 1
+  };
+  
+  const handlePaginaSiguiente = () => {
+    if (!isLastPage) {
+      setCurrentPage(p => p + 1);
+    }
+  };
+  
+  const handlePaginaAnterior = () => {
+    setCurrentPage(p => Math.max(1, p - 1));
+  };
+
 
   return (
     <div style={{ marginTop: '2rem' }}>
@@ -158,54 +226,110 @@ export default function GestionReservas() {
         <button type="submit" style={{ padding: '5px' }}>Crear Reserva</button>
       </form>
 
+      {/* --- Filtro por Estado --- */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="filtro-estado" style={{ marginRight: '10px', fontWeight: 'bold' }}>
+          Filtrar por estado:
+        </label>
+        <select id="filtro-estado" value={filtroEstado} onChange={handleFiltroEstadoChange} style={{ padding: '5px' }}>
+          <option value="">Todas</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+
       {/* --- Lista de reservas existentes --- */}
       <h3>Reservas Existentes</h3>
-      {reservas.length > 0 ? (
-        reservas.map(res => (
-          <div key={res.idReserva} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <strong>Reserva ID: {res.idReserva}</strong> (Compra: {res.idCompra})<br />
-                <strong>Estado:</strong> {res.estado}<br />
-                <strong>Productos:</strong>
-                <ul>
-                  {res.productos && res.productos.length > 0 ? (
-                    res.productos.map(p => (
-                      <li key={p.idProducto}>
-                        {p.cantidad} x (ID: {p.idProducto}) {p.nombre || ''}
-                      </li>
-                    ))
-                  ) : (
-                    <li>(Sin productos detallados)</li>
+      {cargando ? <p>Cargando reservas...</p> : (
+        reservas.length > 0 ? (
+          reservas.map(res => (
+            <div key={res.idReserva} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                  <strong>Reserva ID: {res.idReserva}</strong> (Compra: {res.idCompra})<br />
+                  <strong>Estado:</strong> {res.estado}<br />
+                  <strong>Productos:</strong>
+                  <ul>
+                     {res.productos && res.productos.length > 0 ? (
+                      res.productos.map(p => (
+                        <li key={`${res.idReserva}-${p.idProducto}`}>
+                          {p.cantidad} x (ID: {p.idProducto}) {p.nombre || ''}
+                        </li>
+                      ))
+                    ) : (
+                      <li>(Sin productos detallados)</li>
+                    )}
+                  </ul>
+                </div>
+                
+                {/* --- Grupo de Botones de Acción --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start', flexShrink: 0 }}>
+                  
+                  {/* Botón de Confirmar (solo si está pendiente) */}
+                  {res.estado && res.estado.trim() === 'pendiente' && (
+                    <button
+                      onClick={() => handleConfirmarReserva(res.idReserva)}
+                      style={{
+                        backgroundColor: '#28a745', // Verde
+                        color: 'white',
+                        border: 'none',
+                        padding: '5px 10px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        width: '100px' // Ancho fijo
+                      }}
+                    >
+                      Confirmar
+                    </button>
                   )}
-                </ul>
+
+                  {/* Botón de Cancelar (solo si no está cancelada) */}
+                  {res.estado && res.estado.trim() !== 'cancelado' && (
+                    <button
+                      onClick={() => handleCancelarReserva(res.idReserva)}
+                      style={{
+                        backgroundColor: '#dc3545', // Rojo
+                        color: 'white',
+                        border: 'none',
+                        padding: '5px 10px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        width: '100px' // Ancho fijo
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+
               </div>
-              
-              {/* --- LÓGICA DEL BOTÓN CORREGIDA --- */}
-              {/* Comprueba si el estado existe, quita espacios y compara */}
-              {res.estado && res.estado.trim() !== 'cancelado' && (
-                <button
-                  onClick={() => handleCancelarReserva(res.idReserva)}
-                  style={{
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    padding: '5px 10px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    alignSelf: 'flex-start',
-                    height: 'fit-content'
-                  }}
-                >
-                  Cancelar
-                </button>
-              )}
             </div>
-          </div>
-        ))
-      ) : (
-        <p>No se encontraron reservas para este usuario.</p>
+          ))
+        ) : (
+          <p>No se encontraron reservas para este filtro.</p>
+        )
       )}
+      
+      {/* --- Paginación --- */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <button 
+          onClick={handlePaginaAnterior} 
+          disabled={currentPage === 1 || cargando}
+          style={{ padding: '8px 12px' }}
+        >
+          Anterior
+        </button>
+        <span>Página: {currentPage}</span>
+        <button 
+          onClick={handlePaginaSiguiente} 
+          disabled={isLastPage || cargando}
+          style={{ padding: '8px 12px' }}
+        >
+          Siguiente
+        </button>
+      </div>
+
     </div>
   );
 }
