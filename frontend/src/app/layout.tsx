@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <footer>
           {/* Aca podes agregar información del pie de página */}
-          <p>© 2024 Una web bien fachera. Todos los derechos reservados.</p>
+          <p>© 2025 Una web bien fachera. Todos los derechos reservados.</p>
         </footer>
       </body>
     </html>

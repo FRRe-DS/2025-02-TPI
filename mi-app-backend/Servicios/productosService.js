@@ -162,35 +162,49 @@ const buscarProductoPorId = async (id) => {
 // ====='crearProducto' =====
 const crearProducto = async (datosProducto) => {
   
+  // Separamos 'categoriaIds' del resto de los datos del producto.
   const { 
-    nombre, descripcion, precio, stockInicial, categoriaIds,
-    dimensiones,pesoKg, ubicacion, imagenes
+    categoriaIds, // Este va a la tabla 'productos_categorias'
+    
+    // El resto va a la tabla 'productos'
+    nombre,
+    descripcion,
+    precio,
+    stockInicial, // El frontend lo llama 'stockInicial'
+    pesoKg,
+    dimensiones,
+    ubicacion,
+    imagenes // (Lo añadimos por si lo envías)
   } = datosProducto;
 
-  // 2. Insertar en la tabla principal 'productos'
+  // 2. Creamos el objeto solo con los datos de la tabla 'productos'
+  // Mapeamos los nombres del frontend (ej. precio) a los de la BD (ej. precio_unitario)
+  const datosTablaProducto = {
+    nombre: nombre,
+    descripcion: descripcion,
+    precio_unitario: precio,
+    stock_disponible: stockInicial, // Mapea 'stockInicial' a 'stock_disponible'
+    peso_kg: pesoKg,
+    dimensiones: dimensiones,
+    ubicacion: ubicacion,
+    imagenes: imagenes
+  };
+
+  // 3. Insertar en la tabla principal 'productos'
   const { data: productoData, error: productoError } = await supabase
     .from('productos')
-    .insert({
-      nombre: nombre,
-      descripcion: descripcion,
-      categoriaIds: categoriaIds,
-      precio_unitario: precio,
-      stock_disponible: stockInicial,
-      dimensiones: dimensiones, 
-      peso_kg: pesoKg,
-      ubicacion: ubicacion,
-      imagenes: imagenes
-    })
+    .insert(datosTablaProducto) // Insertamos el objeto limpio
     .select('id')
     .single();
-if (productoError) {
+
+  if (productoError) {
     console.error('Error al insertar producto:', productoError);
     throw new Error(productoError.message);
   }
 
   const nuevoProductoId = productoData.id;
 
-  // 3. Insertar en la tabla 'productos_categorias' (si se proveyeron IDs)
+  // 4. Insertar en la tabla 'productos_categorias' (la tabla 'join')
   if (categoriaIds && categoriaIds.length > 0) {
     
     // Mapeamos el array de IDs al formato que Supabase espera
@@ -204,20 +218,19 @@ if (productoError) {
       .insert(categoriasParaInsertar);
 
     if (catError) {
-      // Nota: Esto es un riesgo. El producto se creó pero sus categorías
-      // fallaron. Una transacción (RPC) evitaría esto.
+      // (Nota: Esto es un riesgo. El producto se creó pero sus categorías
+      // fallaron. Una transacción (RPC) evitaría esto.)
       console.error('Error al insertar categorías del producto:', catError);
       throw new Error(catError.message);
     }
   }
 
-  // 4. Devolver la respuesta en formato 'ProductoCreado'
+  // 5. Devolver la respuesta en formato 'ProductoCreado'
   return {
     id: nuevoProductoId,
     mensaje: "Producto creado exitosamente."
   };
 };
-
 
 
 

@@ -1,13 +1,20 @@
 // --- archivo: index.js (o app.js) ---
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
+
+const corsOptions = {
+  origin: 'http://localhost:3000', 
+  methods: 'GET,POST,PATCH,DELETE,PUT', 
+  allowedHeaders: 'Content-Type'
+};
 
 // --- Middlewares ---
 // ¡IMPORTANTE! Para que req.body funcione (para POST y PATCH)
 app.use(express.json()); 
-
+app.use(cors(corsOptions));
 // --- Importar Rutas ---
 import reservasRouter from './Rutas/reservasRoutes.js';
 import productosRouter from './Rutas/productosRoutes.js';
@@ -26,7 +33,7 @@ app.use('/auth', authRouter);
 app.use('/api/v1/reservas', reservasRouter);
 app.use('/api/v1/productos', productosRouter);
 app.use('/api/v1/categorias',categoriasRouter);
-// app.use('/api/v1/productos', productosRouter);
+
 // ===============================================
 
 

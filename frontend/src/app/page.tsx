@@ -1,45 +1,34 @@
-'use client'
-import { useEffect } from 'react'
-import keycloak from '../lib/keycloak'
-import { useRouter } from 'next/navigation'
+// --- archivo: src/app/page.tsx ---
+"use client"; // Importante, porque ListaProductos es un componente de cliente
 
-
+// 1. Importa tu componente de lista de productos
+import React, { useState } from 'react';
+import ListaProductos from '../componentes/ListaProductos';
+import FormularioProducto from '../componentes/ProductoForm';
+import GestionReservas from '../componentes/GestionReservas';
 
 export default function Page() {
+  // Estado 'trigger' para recargar la lista
+  const [actualizar, setActualizar] = useState(false);
 
-  const router = useRouter()
-  
-  useEffect(() => {
-    keycloak.init({
-      onLoad: 'check-sso',
-      silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-    })
-    .then((authenticated) => {
-      if (authenticated) {
-        console.log('Usuario autenticado', keycloak.tokenParsed?.preferred_username) // esto es solo para debug
-        router.push('/dashboard') //esto redirige al dashboard si ya esta logueado
-      }
-    })
-     .catch((err) => console.error('Error inicializando Keycloak:', err))
-  }, [router])
-
-  const handleLogin = () => keycloak.login()
+  // Esta función se la pasamos al formulario
+  const handleProductoAgregado = () => {
+    // Cambiamos el estado para forzar el 'useEffect' de ListaProductos
+    setActualizar(prev => !prev); 
+  };
 
   return (
-    <main style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
-      <button
-        onClick={handleLogin}
-        style={{
-          backgroundColor: '#4A148C',
-          color: 'white',
-          padding: '10px 16px',
-          borderRadius: '8px',
-          fontSize: '16px',
-          cursor: 'pointer',
-        }}
-      >
-        Ingresar con Keycloak
-      </button>
+    <main style={{ padding: '2rem' }}>
+      <h1>Gestión de Stock</h1>
+      
+      {/* El formulario ahora avisa cuando agrega un producto */}
+      <FormularioProducto onProductoAgregado={handleProductoAgregado} />
+
+      <hr style={{ margin: '2rem 0' }} />
+      
+      {/* La lista ahora escucha al 'trigger' de actualización */}
+      <ListaProductos actualizar={actualizar} />
+      <GestionReservas />
     </main>
-  )
+  );
 }
