@@ -7,7 +7,7 @@ import {
   crearCategoria, 
   actualizarCategoria, 
   eliminarCategoria 
-} from '../servicios/api';
+} from '../servicios/apiAdmin';
 
 // 1. Interfaz
 export interface Categoria {

@@ -6,34 +6,122 @@ import supabase from '../dbConfig.js';
 
 /**
  * ======================================================
- * Servicio para CREAR una nueva reserva (¡ACTUALIZADO!)
+ * Servicio para CREAR una nueva reserva
  * ======================================================
- * Llama a la función RPC 'crear_reserva_y_descontar_stock'
- * para ejecutar la transacción en la base de datos.
+ * Intenta usar la función RPC de Supabase para transacción atómica.
+ * Si la función no existe, usa el método simplificado.
+ * 
+ * IMPORTANTE: Ejecuta SQL_MEJORAS.sql en Supabase para crear la función RPC.
  */
 const crearNuevaReserva = async (datosReserva) => {
   const { idCompra, usuarioId, productos } = datosReserva;
 
-  // 1. Llamar a la función RPC
-  // El nombre debe coincidir EXACTAMENTE con el del SQL
-  const { data, error } = await supabase.rpc('crear_reserva_y_descontar_stock', {
+  // 1. Transformar productos de camelCase a snake_case
+  const productosSnakeCase = productos.map(p => ({
+    producto_id: p.productoId,
+    cantidad: p.cantidad
+  }));
+
+  // 2. Intentar usar la función RPC (transacción atómica)
+  const { data: dataRPC, error: errorRPC } = await supabase.rpc('crear_reserva_y_descontar_stock', {
     id_compra_in: idCompra,
     usuario_id_in: usuarioId,
-    productos_in: productos // Pasamos el array de productos directamente
-  })
-  .single(); // Esperamos que la función devuelva una sola fila (la nueva reserva)
+    productos_in: productosSnakeCase
+  }).single();
 
-  // 2. Manejar errores
-  if (error) {
-    console.error('Error en RPC al crear reserva:', error);
-    // Errores de 'RAISE EXCEPTION' (como "Stock insuficiente")
-    // vendrán en 'error.message'.
-    throw new Error(error.message);
+  // Si la función RPC existe y funciona, retornar el resultado
+  if (!errorRPC && dataRPC) {
+    return _mapReservaToOutput(dataRPC);
   }
 
-  // 3. Devolver la reserva en el formato 'ReservaOutput'
-  // La RPC devuelve la fila de la BD, la mapeamos al formato de la API
-  return _mapReservaToOutput(data);
+  // Si la función RPC no existe, usar el método alternativo (menos seguro)
+  console.warn('Función RPC no disponible, usando método alternativo (no atómico)');
+  
+  const { idCompra: idCompraAlt, usuarioId: usuarioIdAlt, productos: productosAlt } = datosReserva;
+
+  // 1. Verificar stock disponible para cada producto
+  for (const prod of productos) {
+    const { data: producto, error: errorProducto } = await supabase
+      .from('productos')
+      .select('id, nombre, stock_disponible')
+      .eq('id', prod.productoId)
+      .single();
+
+    if (errorProducto || !producto) {
+      throw new Error(`Producto con ID ${prod.productoId} no existe.`);
+    }
+
+    if (producto.stock_disponible < prod.cantidad) {
+      throw new Error(`Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock_disponible}, Solicitado: ${prod.cantidad}`);
+    }
+  }
+
+  // 2. Crear la reserva en la tabla 'reservas'
+  const fechaExpiracion = new Date();
+  fechaExpiracion.setMinutes(fechaExpiracion.getMinutes() + 30); // Expira en 30 minutos
+
+  const { data: reserva, error: errorReserva } = await supabase
+    .from('reservas')
+    .insert({
+      id_compra: idCompra,
+      usuario_id: usuarioId,
+      estado: 'pendiente',
+      expires_at: fechaExpiracion.toISOString(),
+      fecha_creacion: new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if (errorReserva) {
+    console.error('Error al crear reserva:', errorReserva);
+    throw new Error(errorReserva.message);
+  }
+
+  // 3. Insertar los productos de la reserva en 'reservas_productos'
+  const reservasProductos = productos.map(p => ({
+    reserva_id: reserva.id,
+    producto_id: p.productoId,
+    cantidad: p.cantidad
+  }));
+
+  const { error: errorProductos } = await supabase
+    .from('reservas_productos')
+    .insert(reservasProductos);
+
+  if (errorProductos) {
+    console.error('Error al insertar productos de reserva:', errorProductos);
+    // Rollback: eliminar la reserva creada
+    await supabase.from('reservas').delete().eq('id', reserva.id);
+    throw new Error(errorProductos.message);
+  }
+
+  // 4. Descontar el stock de cada producto
+  // Nota: Esta operación NO es atómica. En producción, usar función RPC de PostgreSQL
+  for (const prod of productos) {
+    // Obtener stock actual
+    const { data: productoActual } = await supabase
+      .from('productos')
+      .select('stock_disponible')
+      .eq('id', prod.productoId)
+      .single();
+
+    // Calcular nuevo stock
+    const nuevoStock = productoActual.stock_disponible - prod.cantidad;
+
+    // Actualizar stock
+    const { error: errorUpdate } = await supabase
+      .from('productos')
+      .update({ stock_disponible: nuevoStock })
+      .eq('id', prod.productoId);
+
+    if (errorUpdate) {
+      console.error('Error al actualizar stock:', errorUpdate);
+      throw new Error(errorUpdate.message);
+    }
+  }
+
+  // 5. Devolver la reserva creada
+  return _mapReservaToOutput(reserva);
 };
 
 
@@ -316,11 +404,128 @@ const cancelarReservaYLiberarStock = async (idReserva, motivo) => {
 
 
 
+/**
+ * ======================================================
+ * Servicio para RECLAMAR una reserva (Logística)
+ * ======================================================
+ * Marca una reserva como "reclamada" para entregarla.
+ * Cambia el estado a 'en_entrega' o 'reclamada'.
+ */
+const reclamarReserva = async (idReserva, operadorId, observaciones = '') => {
+  // 1. Buscar la reserva
+  const { data: reserva, error: errorBusqueda } = await supabase
+    .from('reservas')
+    .select('id, estado')
+    .eq('id', idReserva)
+    .single();
+
+  // Manejar error o si no se encuentra
+  if (errorBusqueda) {
+    if (errorBusqueda.code === 'PGRST116') {
+      return { success: false, status: 404, mensaje: "Reserva no encontrada." };
+    }
+    throw new Error(errorBusqueda.message);
+  }
+
+  // 2. Validar estado (solo se puede reclamar si está 'confirmado')
+  if (reserva.estado !== 'confirmado') {
+    return { 
+      success: false, 
+      status: 400, 
+      mensaje: `No se puede reclamar una reserva con estado '${reserva.estado}'. Debe estar 'confirmado'.` 
+    };
+  }
+
+  // 3. Actualizar la reserva a estado 'en_entrega'
+  // IMPORTANTE: Debes agregar 'en_entrega' al enum estado_reserva en Supabase
+  // Ejecuta el archivo SQL_MEJORAS.sql en Supabase para agregar los estados y columnas
+  const { data, error: errorUpdate } = await supabase
+    .from('reservas')
+    .update({
+      estado: 'en_entrega',
+      operador_logistica_id: operadorId, // Columna opcional
+      observaciones_logistica: observaciones, // Columna opcional
+      fecha_actualizacion: new Date().toISOString()
+    })
+    .eq('id', idReserva)
+    .select(`
+      id, id_compra, usuario_id, estado, expires_at,
+      fecha_creacion, fecha_actualizacion,
+      reservas_productos (
+        cantidad,
+        productos ( id, nombre, precio_unitario )
+      )
+    `)
+    .single();
+
+  if (errorUpdate) {
+    console.error('Error al reclamar reserva:', errorUpdate);
+    throw new Error(errorUpdate.message);
+  }
+
+  // 4. Devolver la reserva completa actualizada
+  return { 
+    success: true, 
+    status: 200, 
+    data: _mapReservaCompleta(data),
+    meta: {
+      operadorId,
+      observaciones
+    }
+  };
+};
+
+/**
+ * ======================================================
+ * Servicio para LISTAR RESERVAS EXPIRADAS (Logística)
+ * ======================================================
+ * Busca reservas cuyo 'expires_at' es menor a la fecha actual
+ * y aún no están canceladas.
+ */
+const buscarReservasExpiradas = async (filtros = {}) => {
+  const { page, limit } = filtros;
+
+  // 1. Construir consulta
+  let query = supabase
+    .from('reservas')
+    .select(`
+      id, id_compra, usuario_id, estado, expires_at,
+      fecha_creacion, fecha_actualizacion,
+      reservas_productos (
+        cantidad,
+        productos ( id, nombre, precio_unitario )
+      )
+    `)
+    .lt('expires_at', new Date().toISOString()) // expires_at < NOW
+    .neq('estado', 'cancelado') // Y que NO estén canceladas
+    .neq('estado', 'en_entrega') // Y que NO estén en entrega (ya reclamadas)
+    .neq('estado', 'entregado'); // Y que NO estén entregadas
+
+  // 2. Aplicar paginación
+  const pageNum = page || 1;
+  const pageSize = limit || 20;
+  const offset = (pageNum - 1) * pageSize;
+  query = query.range(offset, offset + pageSize - 1);
+
+  // 3. Ejecutar consulta
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error al buscar reservas expiradas:', error);
+    throw new Error(error.message);
+  }
+
+  // 4. Mapear y devolver
+  return data.map(_mapReservaCompleta);
+};
+
 // --------------EXPORTS-------------------
 export default {
   crearNuevaReserva,
   buscarReservaPorId,
   buscarReservasPorUsuario,
   actualizarEstadoReserva,
-  cancelarReservaYLiberarStock
+  cancelarReservaYLiberarStock,
+  reclamarReserva,
+  buscarReservasExpiradas
 };

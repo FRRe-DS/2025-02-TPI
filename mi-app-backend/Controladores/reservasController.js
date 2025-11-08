@@ -144,7 +144,7 @@ const actualizarReserva = async (req, res) => {
     }
 
     // (Opcional) Validar que el estado sea uno de los permitidos
-    const estadosValidos = ['confirmado', 'pendiente', 'cancelado'];
+    const estadosValidos = ['confirmado', 'pendiente', 'cancelado', 'en_entrega', 'entregado'];
     if (!estadosValidos.includes(estado)) {
       return res.status(400).json({ 
         mensaje: `Estado '${estado}' no es válido. Debe ser uno de: ${estadosValidos.join(', ')}.`
@@ -228,13 +228,126 @@ const cancelarReserva = async (req, res) => {
 
 
 
+/**
+ * =======================================
+ * Controlador para RECLAMAR una reserva (Logística)
+ * =======================================
+ * Ruta: POST /reservas/{idReserva}/reclamar
+ * * Marca una reserva como "reclamada" por Logística.
+ */
+const reclamarReserva = async (req, res) => {
+  try {
+    const { idReserva } = req.params;
+    const { operadorId, observaciones } = req.body;
+
+    // Validación
+    if (!operadorId) {
+      return res.status(400).json({ 
+        mensaje: "El 'operadorId' es obligatorio." 
+      });
+    }
+
+    // Llamar al servicio
+    const resultado = await servicioReservas.reclamarReserva(
+      parseInt(idReserva), 
+      operadorId, 
+      observaciones
+    );
+
+    // Manejar respuestas del servicio
+    if (!resultado.success) {
+      return res.status(resultado.status).json({ mensaje: resultado.mensaje });
+    }
+
+    // Respuesta de éxito
+    res.status(200).json(resultado.data);
+
+  } catch (error) {
+    console.error(`Error al reclamar reserva ${req.params.idReserva}:`, error);
+    res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
+  }
+};
+
+/**
+ * =======================================
+ * Controlador para LIBERAR una reserva (Logística)
+ * =======================================
+ * Ruta: POST /reservas/{idReserva}/liberar
+ * * Libera el stock de una reserva expirada.
+ */
+const liberarReserva = async (req, res) => {
+  try {
+    const { idReserva } = req.params;
+    const { motivo } = req.body;
+
+    // Validación
+    if (!motivo) {
+      return res.status(400).json({ 
+        mensaje: "El 'motivo' es obligatorio." 
+      });
+    }
+
+    // Reutilizamos la función de cancelar reserva
+    const resultado = await servicioReservas.cancelarReservaYLiberarStock(
+      parseInt(idReserva),
+      `[LOGÍSTICA] ${motivo}`
+    );
+
+    if (!resultado.success) {
+      return res.status(resultado.status).json({ mensaje: resultado.mensaje });
+    }
+
+    res.status(200).json({ 
+      mensaje: "Stock liberado correctamente",
+      idReserva: parseInt(idReserva),
+      motivo
+    });
+
+  } catch (error) {
+    console.error(`Error al liberar reserva ${req.params.idReserva}:`, error);
+    res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
+  }
+};
+
+/**
+ * =======================================
+ * Controlador para LISTAR RESERVAS EXPIRADAS (Logística)
+ * =======================================
+ * Ruta: GET /reservas/expiradas
+ * * Lista todas las reservas que expiraron.
+ */
+const listarReservasExpiradas = async (req, res) => {
+  try {
+    const { page, limit } = req.query;
+
+    // Convertir a números si vienen como strings
+    const filtros = {
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined
+    };
+
+    // Llamar al servicio
+    const reservas = await servicioReservas.buscarReservasExpiradas(filtros);
+
+    // Respuesta de éxito
+    res.status(200).json(reservas);
+
+  } catch (error) {
+    console.error('Error al listar reservas expiradas:', error);
+    res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
+  }
+};
+
 // ---- EXPORTS----
 export default {
   crearReserva,
   obtenerReservaPorId,
   listarReservas,
   actualizarReserva,
-  cancelarReserva
+  cancelarReserva,
+  reclamarReserva,
+  liberarReserva,
+  listarReservasExpiradas
 };
 
 

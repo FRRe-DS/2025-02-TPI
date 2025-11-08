@@ -8,7 +8,7 @@ import {
   actualizarProducto, 
   obtenerCategorias,
   obtenerProductoPorId // Para la búsqueda
-} from '../servicios/api';
+} from '../servicios/apiAdmin';
 
 // --- INTERFACES ---
 

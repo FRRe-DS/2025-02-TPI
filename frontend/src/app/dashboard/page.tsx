@@ -1,32 +1,49 @@
-// --- archivo: src/app/page.tsx ---
-"use client"; 
-import React, { useState } from 'react';
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../componentes/KeycloakProvider';
+import { useUserRole } from '../../hooks/useUserRole';
 
-import ListaProductos from '../../componentes/ListaProductos'; 
-import FormularioProducto from '../../componentes/ProductoForm';
-import GestionReservas from '../../componentes/GestionReservas';
-import GestionCategorias from '../../componentes/GestionCategorias'; // <-- 1. IMPORTA
+export default function DashboardPage() {
+  const router = useRouter();
+  const { authenticated, loading: authLoading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
 
-export default function Page() {
-  const [actualizar, setActualizar] = useState(false);
+  useEffect(() => {
+    // Esperar a que termine de cargar
+    if (authLoading || roleLoading) return;
 
-  const handleProductoAgregado = () => {
-    setActualizar(prev => !prev); 
-  };
+    // Si no está autenticado, redirigir al login
+    if (!authenticated) {
+      router.push('/');
+      return;
+    }
 
+    // Redirigir según el rol del usuario
+    if (role === 'compras-be') {
+      router.push('/compras');
+    } else if (role === 'logistica-be') {
+      router.push('/logistica');
+    } else if (role === 'stock-be') {
+      router.push('/admin');
+    } else {
+      // Si no tiene un rol conocido, mostrar error
+      console.error('Usuario sin rol asignado:', role);
+    }
+  }, [authenticated, authLoading, role, roleLoading, router]);
+
+  // Mostrar loading mientras redirige
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Gestión de Stock</h1>
-      
-      <FormularioProducto onProductoAgregado={handleProductoAgregado} />
-
-      <hr style={{ margin: '2rem 0' }} />
-      
-      <ListaProductos actualizar={actualizar} />
-      
-      <GestionReservas />
-
-      <GestionCategorias /> {/* <-- 2. AÑADE EL COMPONENTE */}
-    </main>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh' 
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2>Cargando...</h2>
+        <p>Redirigiendo a tu portal...</p>
+      </div>
+    </div>
   );
 }

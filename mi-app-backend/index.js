@@ -34,21 +34,59 @@ app.use(keycloak.middleware({
   admin: '/'
 }));
 
-// --- Importar Rutas ---
-import reservasRouter from './Rutas/reservasRoutes.js';
-import productosRouter from './Rutas/productosRoutes.js';
-import categoriasRouter from './Rutas/categoriasRoutes.js';
-import authRouter from './Rutas/authRoutes.js'; 
+// === IMPORTAR ROUTERS POR PORTAL ===
+import comprasRouter from './Rutas/compras.routes.js';
+import logisticaRouter from './Rutas/logistica.routes.js';
+import adminRouter from './Rutas/admin.routes.js';
+import authRouter from './Rutas/authRoutes.js';
 
-// --- Montar Rutas ---
+// === MONTAR RUTAS CON PROTECCIÓN POR ROL ===
+
+// Autenticación (público)
 app.use('/auth', authRouter);
-app.use('/api/v1/reservas', reservasRouter);
-app.use('/api/v1/productos', productosRouter);
-app.use('/api/v1/categorias', categoriasRouter);
 
-// (HEALTH CHECK)
+// Portal de Compras - Requiere rol 'compras-be'
+app.use('/api/v1/compras', 
+  keycloak.protect('realm:compras-be'), 
+  comprasRouter
+);
+
+// Logística - Requiere rol 'logistica-be'
+app.use('/api/v1/logistica', 
+  keycloak.protect('realm:logistica-be'), 
+  logisticaRouter
+);
+
+// Administración/Vendedores - Requiere rol 'stock-be'
+app.use('/api/v1/admin', 
+  keycloak.protect('realm:stock-be'), 
+  adminRouter
+);
+
+// === HEALTH CHECK ===
 app.get('/', (req, res) => {
-  res.status(200).json({ mensaje: '¡El servidor esta vivo! TESTI ES UN KPO' });
+  res.status(200).json({ 
+    mensaje: 'API de Stock - TPI 2025 - Grupo 2',
+    version: '2.0.0',
+    estado: 'operativo',
+    portales: {
+      compras: {
+        url: '/api/v1/compras',
+        rol: 'compras-be',
+        descripcion: 'Portal de Compras - Catálogo y Reservas'
+      },
+      logistica: {
+        url: '/api/v1/logistica',
+        rol: 'logistica-be',
+        descripcion: 'Logística - Gestión de Entregas'
+      },
+      admin: {
+        url: '/api/v1/admin',
+        rol: 'stock-be',
+        descripcion: 'Administración - Gestión de Productos'
+      }
+    }
+  });
 });
 
 // --- Iniciar Servidor ---

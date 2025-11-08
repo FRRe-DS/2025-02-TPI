@@ -184,11 +184,85 @@ const eliminarProducto = async (req, res) => {
 };
 
 
+/**
+ * =======================================
+ * Controlador para VERIFICAR DISPONIBILIDAD
+ * =======================================
+ * Ruta: GET /productos/{productoId}/disponibilidad
+ * * Verifica si hay stock disponible.
+ */
+const verificarDisponibilidad = async (req, res) => {
+  try {
+    const { productoId } = req.params;
+    const { cantidad } = req.query; // Cantidad opcional a verificar
+
+    const producto = await productosServicio.buscarProductoPorId(productoId);
+
+    if (!producto) {
+      return res.status(404).json({ 
+        mensaje: `Producto con ID ${productoId} no encontrado.` 
+      });
+    }
+
+    const disponible = cantidad 
+      ? producto.stockDisponible >= parseInt(cantidad)
+      : producto.stockDisponible > 0;
+
+    res.status(200).json({
+      productoId: producto.id,
+      nombre: producto.nombre,
+      stockDisponible: producto.stockDisponible,
+      disponible: disponible,
+      cantidadSolicitada: cantidad ? parseInt(cantidad) : null
+    });
+
+  } catch (error) {
+    console.error(`Error al verificar disponibilidad del producto ${req.params.productoId}:`, error);
+    res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
+  }
+};
+
+/**
+ * =======================================
+ * Controlador para OBTENER PRODUCTO DETALLADO
+ * =======================================
+ * Ruta: GET /productos/{productoId} (para Logística)
+ * * Devuelve producto con TODOS los campos (peso, dimensiones, ubicación).
+ * * Usado por Logística para calcular costos de envío.
+ */
+const obtenerProductoDetallado = async (req, res) => {
+  try {
+    const { productoId } = req.params;
+
+    // Mismo servicio, pero este endpoint es específico para Logística
+    const producto = await productosServicio.buscarProductoPorId(productoId);
+
+    if (!producto) {
+      return res.status(404).json({ 
+        mensaje: `Producto con ID ${productoId} no encontrado.` 
+      });
+    }
+
+    // Verificar que tenga los datos necesarios para Logística
+    if (!producto.pesoKg || !producto.dimensiones || !producto.ubicacion) {
+      console.warn(`Producto ${productoId} consultado por Logística pero falta información de envío`);
+    }
+
+    res.status(200).json(producto);
+
+  } catch (error) {
+    console.error(`Error al obtener producto detallado ${req.params.productoId}:`, error);
+    res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
+  }
+};
+
 // --- Exportamos ---
 export default {
   obtenerProductoPorId,
   crearProducto,
   actualizarProducto,
   eliminarProducto,
-  listarProductos
+  listarProductos,
+  verificarDisponibilidad,
+  obtenerProductoDetallado
 };

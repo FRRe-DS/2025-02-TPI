@@ -1,7 +1,7 @@
 // --- archivo: src/componentes/FormularioProducto.tsx ---
 "use client";
 import React, { useState, useEffect } from 'react';
-import { agregarProducto, obtenerCategorias } from '../servicios/api';
+import { agregarProducto, obtenerCategorias } from '../servicios/apiAdmin';
 
 // --- INTERFACES ---
 
