@@ -1,10 +1,21 @@
-// src/lib/keycloak.js
+// --- archivo: frontend/src/lib/keycloak.js ---
+
 import Keycloak from 'keycloak-js';
 
-const keycloak = new Keycloak({
-  url: 'http://localhost:8080',
-  realm: 'ds-2025-realm',
-  clientId: 'grupo-02',
-});
+// NOTA: Este código solo se ejecutará en el navegador.
+let keycloakInstance;
 
+if (typeof window !== 'undefined') {
+  keycloakInstance = new Keycloak({
+    url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080',
+    realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'tu-realm',
+    clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'tu-frontend-client-id'
+  });
+}
+
+/**
+ * Esta es la instancia de Keycloak que se importará en toda la aplicación,
+ * incluido tu archivo 'api.js'.
+ */
+const keycloak = keycloakInstance;
 export default keycloak;
