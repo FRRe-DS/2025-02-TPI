@@ -1,8 +1,105 @@
 {
-    "realm": "ds-2025-realm",
-    "auth-server-url": "http://localhost:8080/",
-    "ssl-required": "none",
-    "resource": "grupo-02",
-    "public-client": true,
-    "confidential-port": 0
+  "realm": "ds-2025-realm",
+  "auth-server-url": "http://localhost:8080",
+  "ssl-required": "none",
+  
+  "resource": "grupo-02",
+  
+  "bearer-only": true,
+  "confidential-port": 0,
+  
+  "policy-enforcer": {
+    "paths": [
+      {
+        "path": "/api/v1/productos",
+        "methods": [
+          {
+            "method": "GET",
+            "scopes": ["productos:read"]
+          },
+          {
+            "method": "POST",
+            "scopes": ["productos:write"]
+          }
+        ]
+      },
+      {
+        "path": "/api/v1/productos/*",
+        "methods": [
+          {
+            "method": "GET",
+            "scopes": ["productos:read"]
+          },
+          {
+            "method": "PATCH",
+            "scopes": ["productos:write"]
+          },
+          {
+            "method": "DELETE",
+            "scopes": ["productos:write"]
+          }
+        ]
+      },
+      {
+        "path": "/api/v1/categorias",
+        "methods": [
+          {
+            "method": "GET",
+            "scopes": ["categorias:read"]
+          },
+          {
+            "method": "POST",
+            "scopes": ["categorias:write"]
+          }
+        ]
+      },
+      {
+        "path": "/api/v1/categorias/*",
+        "methods": [
+          {
+            "method": "GET",
+            "scopes": ["categorias:read"]
+          },
+          {
+            "method": "PATCH",
+            "scopes": ["categorias:write"]
+          },
+          {
+            "method": "DELETE",
+            "scopes": ["categorias:write"]
+          }
+        ]
+      },
+      {
+        "path": "/api/v1/reservas",
+        "methods": [
+          {
+            "method": "GET",
+            "scopes": ["reservas:read"]
+          },
+          {
+            "method": "POST",
+            "scopes": ["reservas:write"]
+          }
+        ]
+      },
+      {
+        "path": "/api/v1/reservas/*",
+        "methods": [
+          {
+            "method": "GET",
+            "scopes": ["reservas:read"]
+          },
+          {
+            "method": "PATCH",
+            "scopes": ["reservas:write"]
+          },
+          {
+            "method": "DELETE",
+            "scopes": ["reservas:write"]
+          }
+        ]
+      }
+    ]
+  }
 }

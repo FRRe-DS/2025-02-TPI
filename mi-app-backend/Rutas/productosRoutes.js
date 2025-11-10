@@ -1,11 +1,9 @@
-
-
+// --- archivo: Rutas/productosRoutes.js ---
 import express from 'express';
 const router = express.Router();
 
 // 1. Importamos el controlador
 import productosControlador from '../Controladores/productosController.js';
-
 
 /*
  * =============================
@@ -14,17 +12,12 @@ import productosControlador from '../Controladores/productosController.js';
  */
 router.get('/', productosControlador.listarProductos);
 
-
-
-
 /*
  * =============================
  * Ruta: GET /productos/{productoId}
  * =============================
- * operationId: obtenerProductoPorId
  */
 router.get('/:productoId', productosControlador.obtenerProductoPorId);
-
 
 /*
  * =============================
@@ -46,8 +39,6 @@ router.patch('/:productoId', productosControlador.actualizarProducto);
  * =============================
  */
 router.delete('/:productoId', productosControlador.eliminarProducto);
-
-
 
 // 3. Exportamos el 'router'
 export default router;
