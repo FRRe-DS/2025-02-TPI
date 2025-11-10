@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 import reservasRouter from './Rutas/reservasRoutes.js';
 import productosRouter from './Rutas/productosRoutes.js';
 import categoriasRouter from './Rutas/categoriasRoutes.js';
+import authRouter from './Rutas/authRoutes.js';
 
 // Esto le dice a la app que confíe en los tokens
 // emitidos por tu servidor Keycloak.
@@ -32,8 +33,15 @@ app.use(express.json());
 // Esto bloqueará cualquier petición que no tenga un token válido.
 app.use('/api/v1', checkJwt);
 
+HEAD
 // --- Montar Rutas ---
 // Estas rutas ahora están protegidas por 'checkJwt'
+
+// Rutas de autenticación (sin prefijo /api)
+app.use('/auth', authRouter);
+
+// Rutas de API
+origin/main
 app.use('/api/v1/reservas', reservasRouter);
 app.use('/api/v1/productos', productosRouter);
 app.use('/api/v1/categorias', categoriasRouter);

@@ -1,4 +1,4 @@
-// --- archivo: rutas/reservas.rutas.js ---
+
 
 import express from 'express';
 const router = express.Router(); // Obtenemos el "enrutador" de Express
@@ -17,4 +17,15 @@ router.delete('/:idReserva', requiredScopes('reservas:write'), reservasControlad
 
 
 
+HEAD
 export default router;
+
+
+
+
+
+
+// 3. Exportamos el 'router'
+// Lo exportamos para que el archivo principal de la app (index.js o app.js) pueda usarlo.
+export default router;
+origin/main

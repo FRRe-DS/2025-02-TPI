@@ -1,4 +1,4 @@
-// --- archivo: controladores/productos.controlador.js ---
+
 
 import productosServicio from '../Servicios/productosService.js';
 

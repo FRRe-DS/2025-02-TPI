@@ -1,13 +1,9 @@
-// --- archivo: servicios/productos.servicio.js ---
-
-import supabase from '../dbConfig.js'; // O '../dbConfig.js'
 
 
-/**
- * ======================================================
- * HELPER: Mapea datos de la BD al esquema 'Producto'
- * ======================================================
- */
+import supabase from '../dbConfig.js'; 
+
+
+// ===== HELPER DE MAPEO =====
 const _mapProductoToOutput = (data) => {
   if (!data) return null;
 
@@ -29,11 +25,19 @@ const _mapProductoToOutput = (data) => {
     descripcion: data.descripcion,
     precio: parseFloat(data.precio_unitario), // Convertir de NUMERIC a float
     stockDisponible: data.stock_disponible,
-    // (Aquí irían los otros campos como pesoKg, dimensiones, etc. si los hubieras añadido)
-    imagenes: [], // Simulado por ahora, no tenemos tabla de imágenes
-    categorias: categoriasMapeadas
+    dimensiones: data.dimensiones,
+    pesoKg: data.peso_kg ? parseFloat(data.peso_kg) : undefined,
+    ubicacion: data.ubicacion,
+    imagenes: data.imagenes || [], 
+    categorias: categoriasMapeadas,
+     
+    
   };
 };
+
+
+
+
 
 /**
  * ======================================================
@@ -53,6 +57,10 @@ const listarProductos = async (filtros) => {
       descripcion,
       precio_unitario,
       stock_disponible,
+      dimensiones,
+      ubicacion,
+      imagenes,
+      peso_kg,
       productos_categorias!inner (
         categorias (
           id,
@@ -124,6 +132,10 @@ const buscarProductoPorId = async (id) => {
       descripcion,
       precio_unitario,
       stock_disponible,
+      dimensiones,
+      ubicacion,
+      imagenes,
+      peso_kg,
       productos_categorias (
         categorias (
           id,
@@ -147,15 +159,12 @@ const buscarProductoPorId = async (id) => {
 
 
 
+// ====='crearProducto' =====
 const crearProducto = async (datosProducto) => {
-  // 1. Extraer los datos del 'ProductoInput'
+  
   const { 
-    nombre, 
-    descripcion, 
-    precio, 
-    stockInicial, 
-    categoriaIds 
-    // ... (aquí irían pesoKg, dimensiones, etc.)
+    nombre, descripcion, precio, stockInicial, categoriaIds,
+    dimensiones,pesoKg, ubicacion, imagenes
   } = datosProducto;
 
   // 2. Insertar en la tabla principal 'productos'
@@ -164,13 +173,17 @@ const crearProducto = async (datosProducto) => {
     .insert({
       nombre: nombre,
       descripcion: descripcion,
+      categoriaIds: categoriaIds,
       precio_unitario: precio,
-      stock_disponible: stockInicial // 'stockInicial' va a 'stock_disponible'
+      stock_disponible: stockInicial,
+      dimensiones: dimensiones, 
+      peso_kg: pesoKg,
+      ubicacion: ubicacion,
+      imagenes: imagenes
     })
-    .select('id') // Pedimos que nos devuelva el ID del producto creado
-    .single(); // Esperamos un solo objeto
-
-  if (productoError) {
+    .select('id')
+    .single();
+if (productoError) {
     console.error('Error al insertar producto:', productoError);
     throw new Error(productoError.message);
   }
@@ -206,29 +219,28 @@ const crearProducto = async (datosProducto) => {
 };
 
 
+
+
 /**
  * ======================================================
  * Servicio para ACTUALIZAR un producto
  * ======================================================
  */
 const actualizarProducto = async (productoId, datosParaActualizar) => {
-  // 1. Separar 'categoriaIds' del resto de los datos
-  // 'datosParaActualizar' es el objeto 'ProductoUpdate' del req.body
   const { categoriaIds, ...datosProducto } = datosParaActualizar;
 
-  // 2. Actualizar la tabla principal 'productos'
-  // Solo actualizamos si hay datos para actualizar en esta tabla
   if (Object.keys(datosProducto).length > 0) {
     
-    // Mapeamos los nombres de la API a la BD (ej. stockInicial -> stock_disponible)
     const datosMapeados = {
         nombre: datosProducto.nombre,
         descripcion: datosProducto.descripcion,
         precio_unitario: datosProducto.precio,
-        stock_disponible: datosProducto.stockInicial 
-        // ... (añadir más campos si los tienes)
+        stock_disponible: datosProducto.stockInicial,
+        dimensiones: datosProducto.dimensiones,
+        peso_kg: datosProducto.pesoKg,
+        ubicacion: datosProducto.ubicacion,
+        imagenes: datosProducto.imagenes
     };
-
     // Filtramos campos 'undefined' para no sobrescribir con null
     Object.keys(datosMapeados).forEach(key => 
         datosMapeados[key] === undefined && delete datosMapeados[key]
