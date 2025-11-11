@@ -157,9 +157,10 @@ export default function ListaProductos({ actualizar }: Props) {
           altoCm: Number(editFormData.dimensiones.altoCm)
         }
       };
-      delete (datosActualizados as any).stockDisponible; 
+  const payload = { ...datosActualizados };
+  Reflect.deleteProperty(payload, 'stockDisponible');
 
-      const productoActualizado = await actualizarProducto(id, datosActualizados);
+  const productoActualizado = await actualizarProducto(id, payload);
       
       // Actualiza AMBAS listas
       setProductos(prev => prev.map(p => (p.id === id ? productoActualizado : p)));
