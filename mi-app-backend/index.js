@@ -1,6 +1,7 @@
 // --- archivo: index.js (o app.js) ---
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import { auth } from 'express-oauth2-jwt-bearer';
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,8 @@ import reservasRouter from './Rutas/reservasRoutes.js';
 import productosRouter from './Rutas/productosRoutes.js';
 import categoriasRouter from './Rutas/categoriasRoutes.js';
 import authRouter from './Rutas/authRoutes.js';
+import adminRouter from './Rutas/adminRoutes.js';
+import { startReservationExpiryWorker } from './worker/reservationExpiryWorker.js';
 
 // Esto le dice a la app que confíe en los tokens
 // emitidos por tu servidor Keycloak.
@@ -26,14 +29,20 @@ const checkJwt = auth({
 
 // --- Middlewares ---
 // ¡IMPORTANTE! Para que req.body funcione (para POST y PATCH)
-app.use(express.json()); 
+app.use(express.json());
+// Configurar CORS
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 // --- Montar Rutas ---
 // Le decimos a Express: "Cualquier petición que empiece con '/api/v1/reservas',
 // Le decimos a Express que USE este guardia en TODAS las rutas /api/v1
 // Esto bloqueará cualquier petición que no tenga un token válido.
 app.use('/api/v1', checkJwt);
 
-HEAD
 // --- Montar Rutas ---
 // Estas rutas ahora están protegidas por 'checkJwt'
 
@@ -41,10 +50,11 @@ HEAD
 app.use('/auth', authRouter);
 
 // Rutas de API
-origin/main
 app.use('/api/v1/reservas', reservasRouter);
 app.use('/api/v1/productos', productosRouter);
 app.use('/api/v1/categorias', categoriasRouter);
+// Admin routes (under /api/v1/admin)
+app.use('/api/v1/admin', adminRouter);
 
 
 //(HEALTH CHECK)
@@ -57,4 +67,10 @@ app.get('/', (req, res) => {
 // --- Iniciar Servidor ---
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  try {
+    // Iniciamos el worker que libera reservas expiradas
+    startReservationExpiryWorker();
+  } catch (err) {
+    console.error('No se pudo iniciar el reservation expiry worker:', err);
+  }
 });

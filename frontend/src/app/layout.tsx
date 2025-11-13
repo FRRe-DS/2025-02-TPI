@@ -1,29 +1,20 @@
 import type { Metadata } from 'next';
-// importamos los estilos globales
 import './globals.css';
-// definimos los metadatos de la aplicación
+
 export const metadata: Metadata = {
-  title: 'Mi App',
-  description: 'Aplicación con Keycloak',
+  title: 'Stock Manager - Sistema de Gestión Inteligente',
+  description: 'Plataforma completa de gestión de stock y reservas con autenticación SSO empresarial',
+  keywords: ['stock', 'inventario', 'gestión', 'reservas', 'keycloak', 'sso'],
+  authors: [{ name: 'FRRe - Facultad Regional Resistencia' }],
 };
-// definimos el layout raíz de la aplicación
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body>
-        <header>
-          {/* aca puedo poner mas adelante la navegacion */}
-          <nav> barra
-            {/* Aca podes agregar enlaces de navegación u otros elementos del encabezado */}
-          </nav>
-        </header>
-        <main> {/* Aca va el contenido principal de la aplicación */}
-          {children} 
-        </main>
-        <footer>
-          {/* Aca podes agregar información del pie de página */}
-          <p>© 2024 Una web bien fachera. Todos los derechos reservados.</p>
-        </footer>
+      <body className="bg-gradient-to-br from-violet-900 via-purple-800 to-indigo-900 text-white antialiased">
+        <div className="min-h-screen flex flex-col">
+          {children}
+        </div>
       </body>
     </html>
   );

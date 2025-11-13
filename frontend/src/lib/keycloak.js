@@ -7,4 +7,18 @@ const keycloak = new Keycloak({
   clientId: 'grupo-02',
 });
 
+// Prevenir errores de iframe silenciosamente
+if (typeof window !== 'undefined') {
+  // Capturar errores del iframe
+  const originalError = console.error;
+  console.error = function(...args) {
+    // Ignorar errores específicos de Keycloak iframe
+    if (args[0]?.toString?.().includes('Original file') || 
+        args[0]?.toString?.().includes('login iframe')) {
+      return;
+    }
+    originalError.apply(console, args);
+  };
+}
+
 export default keycloak;
