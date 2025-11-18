@@ -5,6 +5,8 @@ import keycloak from '../lib/keycloak'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../componentes/KeycloakProvider' // Importamos el hook
 import Image from 'next/image'
+import { FaArrowRight } from 'react-icons/fa'
+import 'flowbite';
 
 export default function Page() {
   const router = useRouter()
@@ -27,44 +29,44 @@ export default function Page() {
 
   // Mostramos un estado de carga mientras el provider se inicializa
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Autenticando, por favor espere...</div>
+    return <div>Autenticando, por favor espere...</div>
   }
-
-  // Si no está autenticado (y no está cargando), mostramos el botón.
+  
   return (
-    <main className="flex h-screen">
-      {/* Panel izquierdo */}
-      <section className="w-1/2 bg-gradient-to-b from-indigo-500 to-purple-700 flex items-center justify-center relative">
-        <div className="text-center">
-          <Image
-            src="/logo.png" // reemplazalo por el nombre real de tu logo en /public
-            alt="Logo"
-            width={180}
-            height={180}
-            className="mx-auto"
-          />
-          <h1 className="text-white text-4xl font-bold mt-4 tracking-wide">TESTI</h1>
-          <p className="text-gray-200 text-lg mt-2">E-Commerce Shop</p>
-        </div>
-      </section>
+  <main className="flex flex-col items-center justify-start h-screen bg-login-gradient pt-20">
+    
+    <Image
+      src="/testicat.png"
+      alt="Logo"
+      width={250}
+      height={350}
+      className="mb-6"
+    />
 
-      {/* Panel derecho */}
-      <section className="w-1/2 flex items-center justify-center bg-white">
-        <div className="w-full max-w-sm p-8 rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">¡Bienvenido de nuevo!</h2>
+    <button 
+  onClick={handleLogin}
+  type="button"
+  className="
+    inline-flex items-center gap-2
+    text-white
+    bg-[#24243E] 
+    hover:bg-[#1d1d34]
+    shadow-lg shadow-black/30
+    font-medium 
+    rounded-lg
+    text-sm
+    px-16 py-6
+    text-center
+    cursor-pointer
 
-          <button
-            onClick={handleLogin}
-            className="w-full bg-indigo-700 text-white py-3 rounded-md hover:bg-indigo-800 transition-all"
-          >
-            Iniciar sesión con Keycloak
-          </button>
+  "
+>
+  <span>Iniciar Sesión con Keycloack</span>
+  <FaArrowRight className="opacity-90 transition-transform duration-300 group-hover:translate-x-1" />
+</button>
 
-          <p className="text-center text-sm text-gray-500 mt-4 hover:underline cursor-pointer">
-            ¿Problemas iniciando sesión?
-          </p>
-        </div>
-      </section>
-    </main>
-  )
+
+  </main>
+)
+
 }
