@@ -1,0 +1,250 @@
+/* ===========================================
+   CONTENEDOR GENERAL
+=========================================== */
+.lp-container {
+  padding: 20px;
+  width: 100%;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+.lp-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ===========================================
+   FILTROS
+=========================================== */
+
+.filtros-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Filtros comunes */
+.filtros-row input,
+.filtros-row select{
+    min-width: 180px
+}
+.filtros-row button {
+  height: 35px;
+  padding: 0 14px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Buscador por ID (form) */
+.form-id {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botones */
+.filtros-row button {
+  background: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.filtros-row button:hover {
+  background: #000;
+}
+
+/* Error */
+.lp-error {
+  color: red;
+  margin-bottom: 10px;
+}
+
+/* ===========================================
+   TABLA DASHBOARD
+=========================================== */
+
+.tabla-container,
+.lp-table-container {
+  margin-top: 10px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+  overflow-x: auto;
+}
+
+.tabla-dashboard,
+.tabla-linda {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Encabezados */
+.tabla-dashboard thead tr,
+.tabla-linda thead tr {
+  background: #fafafa;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.tabla-dashboard th,
+.tabla-linda th {
+  padding: 14px;
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+}
+
+/* Filas */
+.tabla-dashboard tbody tr,
+.tabla-linda tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.tabla-dashboard tbody tr:hover,
+.tabla-linda tbody tr:hover {
+  background: #f6f6f6;
+}
+
+.tabla-dashboard td,
+.tabla-linda td {
+  padding: 14px;
+  color: #444;
+}
+
+/* Columnas personalizadas */
+.col-id {
+  width: 80px;
+  font-weight: 700;
+  color: #222;
+}
+
+.col-nombre {
+  max-width: 250px;
+  white-space: normal;
+}
+
+.col-precio {
+  font-weight: 600;
+}
+
+.col-acciones {
+  display: flex;
+  gap: 12px;
+}
+
+/* Acción: Editar / Eliminar */
+/*.btn-link,
+.link-editar,
+.link-eliminar {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+}
+
+.btn-link.edit,
+.link-editar {
+  color: #0055cc;
+}
+
+.btn-link.delete,
+.link-eliminar {
+  color: #cc0000;
+}
+
+.btn-link:hover,
+.link-editar:hover,
+.link-eliminar:hover {
+  text-decoration: underline;
+}
+ */
+ 
+/* ===========================================
+   BADGES DE STOCK (NUEVOS COLORES)
+=========================================== */
+
+.badge-stock {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 55px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* 🔴 0 a 5 unidades */
+.badge-stock.rojo {
+  background: #ffd5d5;
+  color: #b30000;
+}
+
+/* 🟡 6 a 20 unidades */
+.badge-stock.amarillo {
+  background: #fff7c2;
+  color: #8a7000;
+}
+
+/* 🔵 21 a 100 unidades */
+.badge-stock.azul {
+  background: #d8eaff;
+  color: #004a99;
+}
+
+/* 🟢 101+ unidades */
+.badge-stock.verde {
+  background: #d4f8d4;
+  color: #0a7a0a;
+}
+
+
+/* ===========================================
+   PAGINACIÓN
+=========================================== */
+
+.lp-pagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.lp-pagination button {
+  padding: 8px 14px;
+  background: #eee;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.lp-pagination button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ===========================================
+   LOADING
+=========================================== */
+.lp-loading {
+  font-style: italic;
+  color: #555;
+}
+
+/* --- BOTÓN DETALLE --- */
+.link-detalle {
+  color: #686ddf;         /* azul */
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link-detalle:hover {
+  text-decoration: underline;
+}
