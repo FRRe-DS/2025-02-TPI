@@ -20,15 +20,24 @@ export const useAuth = () => useContext(KeycloakContext);
 
 export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const initKeycloak = async () => {
       if (!keycloak) {
         console.error("Keycloak no está inicializado (probablemente en SSR)");
         setLoading(false);
         return;
       }
+      
+      console.log('Iniciando Keycloak...');
       
       try {
         // Esta es la ÚNICA inicialización
@@ -37,9 +46,11 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
           checkLoginIframe: false 
         });
         
+        console.log('Keycloak inicializado. Autenticado:', auth);
         setAuthenticated(auth);
         
         if (auth) {
+          console.log('Usuario autenticado:', keycloak.tokenParsed);
           // Configurar el refresco automático del token
           setInterval(() => {
             keycloak?.updateToken(70) 
@@ -58,7 +69,7 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initKeycloak();
-  }, []);
+  }, [isMounted]);
 
   // Pasamos 'loading' y 'authenticated' al contexto
   return (

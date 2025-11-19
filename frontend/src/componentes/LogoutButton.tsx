@@ -2,15 +2,13 @@
 'use client'; 
 
 import React from 'react';
-import keycloak from '../lib/keycloak'; // Importamos la misma instancia
+import { FaSignOutAlt } from 'react-icons/fa';
+import keycloak from '../lib/keycloak';
 
 export const LogoutButton = () => {
-  
   const handleLogout = () => {
-    // Usamos 'keycloak?.' para evitar el error 'undefined' en el servidor
+    console.log('Cerrando sesión con Keycloak...');
     keycloak?.logout({
-      // ¡Esta línea es clave!
-      // Nos envía de vuelta a la página de inicio (la del botón de login).
       redirectUri: window.location.origin 
     });
   };
@@ -18,16 +16,9 @@ export const LogoutButton = () => {
   return (
     <button
       onClick={handleLogout}
-      style={{
-        backgroundColor: '#D32F2F',
-        color: 'white',
-        padding: '8px 14px',
-        borderRadius: '8px',
-        fontSize: '14px',
-        cursor: 'pointer',
-        border: 'none',
-      }}
+      className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
     >
+      <FaSignOutAlt />
       Cerrar Sesión
     </button>
   );

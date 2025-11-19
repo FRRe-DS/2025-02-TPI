@@ -4,46 +4,35 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 import keycloak from '../lib/keycloak';
 
 /**
- * NUEVA FUNCIÓN 'WRAPPER' (ENVOLTORIO)
- *
- * Esta función centraliza TODA la lógica de 'fetch'.
- * - Añade la URL base de la API.
- * - Inyecta el token de Keycloak automáticamente.
- * - Maneja las respuestas (JSON) y los errores.
+ * Función helper para hacer peticiones a la API
+ * CON autenticación de Keycloak
  */
-async function fetchConAuth(endpoint, options = {}) {
+async function apiFetch(endpoint, options = {}) {
+  const url = `${API_URL}${endpoint}`;
+  
   const token = (typeof window !== 'undefined' && keycloak.token) 
     ? keycloak.token 
     : null;
-
-  // 1. Preparar Headers
-  const headers = new Headers(options.headers || {});
   
-  if (options.method === 'POST' || options.method === 'PATCH' || options.method === 'DELETE') {
-    if (!headers.has('Content-Type') && options.body) {
-      headers.append('Content-Type', 'application/json');
-    }
-  }
-  
-  if (token) {
-    headers.append('Authorization', `Bearer ${token}`);
-  }
-
-  // 2. Preparar Opciones finales
-  const fetchOptions = {
-    ...options,
-    headers: headers
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
   };
 
-  // 3. Construir URL completa
-  const url = `${API_URL}${endpoint}`;
+  // Agregar token de autorización si existe
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const fetchOptions = {
+    ...options,
+    headers
+  };
+
+  console.log(`Llamando a: ${options.method || 'GET'} ${endpoint}`);
   
-  console.log(`Llamando a (con auth): ${options.method || 'GET'} ${endpoint}`);
-  
-  // 4. Ejecutar el fetch
   const res = await fetch(url, fetchOptions);
 
-  // 5. Manejo de Errores
   if (!res.ok) {
     let errorData = {};
     try {
@@ -54,6 +43,7 @@ async function fetchConAuth(endpoint, options = {}) {
     
     const errorMessage = errorData.mensaje || `Error ${res.status}`;
     
+    // Si es 401 y tenemos token, intentar refrescar
     if (res.status === 401 && token) {
       console.warn('Token expirado (401), intentando refrescar...');
       keycloak?.updateToken(30).catch(() => keycloak.logout());
@@ -62,12 +52,10 @@ async function fetchConAuth(endpoint, options = {}) {
     throw new Error(errorMessage);
   }
 
-  // 6. Manejar respuestas sin contenido (ej. DELETE exitoso - 204 No Content)
   if (res.status === 204) {
     return; 
   }
   
-  // 7. Devolver el JSON
   return res.json();
 }
 
@@ -82,29 +70,29 @@ export async function obtenerProductos(filtros = {}) {
   if (q) params.append('q', q);
   if (categoriaId && categoriaId > 0) params.append('categoriaId', categoriaId.toString());
   
-  return fetchConAuth(`/productos?${params.toString()}`);
+  return apiFetch(`/api/v1/productos?${params.toString()}`);
 }
 
 export async function obtenerProductoPorId(id) {
-  return fetchConAuth(`/productos/${id}`);
+  return apiFetch(`/api/v1/productos/${id}`);
 }
 
 export async function agregarProducto(productoData) { 
-  return fetchConAuth(`/productos`, {
+  return apiFetch(`/api/v1/productos`, {
     method: 'POST',
     body: JSON.stringify(productoData)
   });
 }
 
 export async function actualizarProducto(productoId, datosActualizados) {
-  return fetchConAuth(`/productos/${productoId}`, {
+  return apiFetch(`/api/v1/productos/${productoId}`, {
     method: 'PATCH',
     body: JSON.stringify(datosActualizados) 
   });
 }
 
 export async function eliminarProducto(productoId) {
-  return fetchConAuth(`/productos/${productoId}`, {
+  return apiFetch(`/api/v1/productos/${productoId}`, {
     method: 'DELETE'
   });
 }
@@ -112,25 +100,25 @@ export async function eliminarProducto(productoId) {
 // --- CATEGORÍAS ---
 
 export async function obtenerCategorias() {
-  return fetchConAuth(`/categorias`);
+  return apiFetch(`/api/v1/categorias`);
 }
 
 export async function crearCategoria(categoriaData) {
-  return fetchConAuth(`/categorias`, {
+  return apiFetch(`/api/v1/categorias`, {
     method: 'POST',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function actualizarCategoria(id, categoriaData) {
-  return fetchConAuth(`/categorias/${id}`, {
+  return apiFetch(`/api/v1/categorias/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function eliminarCategoria(id) {
-  return fetchConAuth(`/categorias/${id}`, {
+  return apiFetch(`/api/v1/categorias/${id}`, {
     method: 'DELETE'
   });
 }
@@ -138,7 +126,7 @@ export async function eliminarCategoria(id) {
 // --- RESERVAS ---
 
 export async function crearReserva(reservaData) {
-  return fetchConAuth(`/reservas`, {
+  return apiFetch(`/api/v1/reservas`, {
     method: 'POST',
     body: JSON.stringify(reservaData)
   });
@@ -155,11 +143,11 @@ export async function obtenerReservas(filtros = {}) {
   params.append('limit', limit.toString());
   if (estado) params.append('estado', estado);
 
-  return fetchConAuth(`/reservas?${params.toString()}`); 
+  return apiFetch(`/api/v1/reservas?${params.toString()}`); 
 }
 
 export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
-  return fetchConAuth(`/reservas/${reservaId}`, {
+  return apiFetch(`/api/v1/reservas/${reservaId}`, {
     method: 'PATCH',
     body: JSON.stringify({ 
       usuarioId: usuarioId, 
@@ -169,7 +157,7 @@ export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
 }
 
 export async function cancelarReserva(reservaId, motivo) {
-  return fetchConAuth(`/reservas/${reservaId}`, {
+  return apiFetch(`/api/v1/reservas/${reservaId}`, {
     method: 'DELETE',
     body: JSON.stringify({ motivo: motivo }) 
   });

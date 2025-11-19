@@ -6,11 +6,14 @@ import Keycloak from 'keycloak-js';
 let keycloakInstance;
 
 if (typeof window !== 'undefined') {
-  keycloakInstance = new Keycloak({
-    url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080',
-    realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'tu-realm',
-    clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'tu-frontend-client-id'
-  });
+  const keycloakConfig = {
+    url: 'http://localhost:8081/',
+    realm: 'ds-2025-realm',
+    clientId: 'grupo-02'
+  };
+  
+  console.log('Inicializando Keycloak con config:', keycloakConfig);
+  keycloakInstance = new Keycloak(keycloakConfig);
 }
 
 /**

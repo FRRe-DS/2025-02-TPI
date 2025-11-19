@@ -4,6 +4,9 @@ import { useEffect } from 'react'
 import keycloak from '../lib/keycloak' 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../componentes/KeycloakProvider' // Importamos el hook
+import Image from 'next/image'
+import { FaArrowRight } from 'react-icons/fa'
+import 'flowbite';
 
 export default function Page() {
   const router = useRouter()
@@ -22,29 +25,57 @@ export default function Page() {
   }, [authenticated, loading, router]) // Se ejecuta si estos valores cambian
 
   // Usamos 'keycloak?.' por si acaso
-  const handleLogin = () => keycloak?.login()
+  const handleLogin = () => {
+    console.log('Botón login clickeado');
+    console.log('Keycloak instance:', keycloak);
+    if (keycloak) {
+      console.log('Llamando a keycloak.login()');
+      keycloak.login();
+    } else {
+      console.error('Keycloak no está disponible');
+    }
+  }
 
   // Mostramos un estado de carga mientras el provider se inicializa
   if (loading) {
     return <div>Autenticando, por favor espere...</div>
   }
 
-  // Si no está autenticado (y no está cargando), mostramos el botón.
   return (
-    <main style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
-      <button
-        onClick={handleLogin}
-        style={{
-          backgroundColor: '#4A148C',
-          color: 'white',
-          padding: '10px 16px',
-          borderRadius: '8px',
-          fontSize: '16px',
-          cursor: 'pointer',
-        }}
-      >
-        Ingresar con Keycloak
-      </button>
-    </main>
-  )
+  <main className="flex flex-col items-center justify-start h-screen bg-login-gradient pt-20">
+    
+    <Image
+      src="/testicat.png"
+      alt="Logo"
+      width={250}
+      height={350}
+      className="mb-6"
+    />
+
+    <button 
+  onClick={handleLogin}
+  type="button"
+  className="
+    inline-flex items-center gap-2
+    text-white
+    bg-[#24243E] 
+    hover:bg-[#1d1d34]
+    shadow-lg shadow-black/30
+    font-medium 
+    rounded-lg
+    text-sm
+    px-16 py-6
+    text-center
+    cursor-pointer
+
+  "
+>
+  <span>Iniciar Sesión con Keycloak</span>
+  <FaArrowRight className="opacity-90 transition-transform duration-300 group-hover:translate-x-1" />
+</button>
+
+
+  </main>
+)
+
 }

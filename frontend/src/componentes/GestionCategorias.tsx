@@ -114,84 +114,100 @@ export default function GestionCategorias() {
   };
 
   if (cargando) {
-    return <div>Cargando categorías...</div>;
+    return <div className="text-gray-600">Cargando categorías...</div>;
   }
-
-  // --- ESTILOS (para hacerlo más limpio) ---
-  const styles: { [key: string]: React.CSSProperties } = {
-    container: { marginTop: '2rem', borderTop: '2px solid #000', paddingTop: '1rem' },
-    form: { marginBottom: '1rem', display: 'flex', gap: '5px' },
-    list: { listStyle: 'none', padding: 0 },
-    listItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', borderBottom: '1px solid #eee' },
-    editInput: { marginRight: '5px' },
-    editButton: { backgroundColor: '#28a745', color: 'white', border: 'none', padding: '5px', marginRight: '5px' },
-    cancelButton: { backgroundColor: '#6c757d', color: 'white', border: 'none', padding: '5px' },
-    deleteButton: { backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', marginLeft: '5px' },
-    editButtonOuter: { backgroundColor: '#ffc107', color: 'black', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }
-  };
 
   // --- RENDERIZADO ---
   return (
-    <div style={styles.container}>
-      <h2>Gestión de Categorías</h2>
-      
+    <div>
       {/* Formulario para Agregar */}
-      <form onSubmit={handleAgregar} style={styles.form}>
+      <form onSubmit={handleAgregar} className="mb-6 flex flex-col sm:flex-row gap-2">
         <input 
           type="text" 
           placeholder="Nombre nueva categoría" 
           value={nuevoNombre} 
           onChange={e => setNuevoNombre(e.target.value)} 
           required 
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
         />
         <input 
           type="text" 
           placeholder="Descripción (opcional)" 
           value={nuevaDesc} 
           onChange={e => setNuevaDesc(e.target.value)} 
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
         />
-        <button type="submit">Agregar Categoría</button>
+        <button 
+          type="submit"
+          className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200 whitespace-nowrap"
+        >
+          Agregar Categoría
+        </button>
       </form>
 
       {/* Lista de Categorías */}
-      <ul style={styles.list}>
+      <div className="space-y-3">
         {categorias.map(cat => (
-          <li key={cat.id} style={styles.listItem}>
+          <div key={cat.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
             {editingId === cat.id ? (
               // --- Vista de Edición ---
-              <div>
+              <div className="space-y-3">
                 <input 
                   type="text" 
                   value={editNombre} 
                   onChange={e => setEditNombre(e.target.value)}
-                  style={styles.editInput}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Nombre"
                 />
                 <input 
                   type="text" 
                   value={editDesc} 
                   onChange={e => setEditDesc(e.target.value)}
-                  style={styles.editInput}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Descripción"
                 />
-                <button onClick={() => handleGuardarEdicion(cat.id)} style={styles.editButton}>Guardar</button>
-                <button onClick={handleCancelarEdicion} style={styles.cancelButton}>Cancelar</button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleGuardarEdicion(cat.id)} 
+                    className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+                  >
+                    Guardar
+                  </button>
+                  <button 
+                    onClick={handleCancelarEdicion} 
+                    className="bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
             ) : (
               // --- Vista Normal ---
-              <div>
-                <strong>{cat.nombre}</strong> (ID: {cat.id})<br />
-                <small>{cat.descripcion || '(Sin descripción)'}</small>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <p className="font-bold text-gray-800 text-lg">{cat.nombre}</p>
+                  <p className="text-sm text-gray-600 mt-1">ID: {cat.id}</p>
+                  <p className="text-gray-700 mt-2">{cat.descripcion || '(Sin descripción)'}</p>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <button 
+                    onClick={() => handleEditarClick(cat)} 
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+                  >
+                    Editar
+                  </button>
+                  <button 
+                    onClick={() => handleEliminar(cat.id)} 
+                    className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             )}
-            
-            {editingId !== cat.id && (
-              <div>
-                <button onClick={() => handleEditarClick(cat)} style={styles.editButtonOuter}>Editar</button>
-                <button onClick={() => handleEliminar(cat.id)} style={styles.deleteButton}>Eliminar</button>
-              </div>
-            )}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

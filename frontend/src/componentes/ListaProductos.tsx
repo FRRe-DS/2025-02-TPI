@@ -157,6 +157,7 @@ export default function ListaProductos({ actualizar }: Props) {
           altoCm: Number(editFormData.dimensiones.altoCm)
         }
       };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (datosActualizados as any).stockDisponible; 
 
       const productoActualizado = await actualizarProducto(id, datosActualizados);

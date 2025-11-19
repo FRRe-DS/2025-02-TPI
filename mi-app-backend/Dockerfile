@@ -8,14 +8,14 @@ FROM node:20-alpine
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar package.json y package-lock.json
-COPY package*.json ./
+    # Copiar package.json y package-lock.json
+    COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci --only=production
+    # Instalar dependencias
+    RUN npm install --only=production
 
-# Copiar el resto del código
-COPY . .
+    # Copiar el resto del código
+    COPY . .
 
 # Exponer puerto 4000
 EXPOSE 4000
