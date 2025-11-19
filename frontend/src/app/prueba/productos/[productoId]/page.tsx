@@ -53,10 +53,11 @@ export default function DetalleProductoPage({ params }: DetalleProductoPageProps
           <h2>Descripción</h2>
 
           <ul className="lista-descripcion">
-            {producto.descripcion
-              ? <li>{producto.descripcion}</li>
-              : <li className="texto-vacio">Sin descripción disponible.</li>
-            }
+            {producto.descripcion ? (
+              <li>{producto.descripcion}</li>
+            ) : (
+              <li className="texto-vacio">Sin descripción disponible.</li>
+            )}
           </ul>
         </div>
 
@@ -65,34 +66,37 @@ export default function DetalleProductoPage({ params }: DetalleProductoPageProps
       {/* ---------- INFO EXTRA ---------- */}
       <div className="detalle-info-extra">
 
-        <div>
+        {/* PRECIO */}
+        <div className="info-bloque">
           <h3>Precio</h3>
           <p className="precio">
             {producto.precio ? `$${producto.precio}` : "No informado"}
           </p>
         </div>
 
-        <div>
+        {/* DISPONIBILIDAD */}
+        <div className="info-bloque">
           <h3>Disponibilidad</h3>
           <span className={`badge-stock ${getStockBadge(producto.stockDisponible ?? 0)}`}>
             {producto.stockDisponible ?? 0}
           </span>
         </div>
 
-        <div>
+        {/* UBICACIÓN (EXTENDIDA) */}
+        <div className="info-bloque">
           <h3>Ubicación</h3>
-          <p>{producto.calle || "Calle no informada"}</p>
-          <p>{producto.ciudad || "Ciudad no informada"}</p>
-          <p>{producto.pais || "País no informado"}</p>
+          <p>{producto.ubicacion?.street || "Calle no informada"}</p>
+          <p>{producto.ubicacion?.city || "Ciudad no informada"}</p>
+          <p>{producto.ubicacion?.state || "Provincia/Estado no informado"}</p>
+          <p>{producto.ubicacion?.postal_code || "Código postal no informado"}</p>
+          <p>{producto.ubicacion?.country || "País no informado"}</p>
         </div>
 
       </div>
 
       {/* ---------- BOTONES ---------- */}
       <div className="detalle-botones">
-        <button className="btn-editar">
-          EDITAR PRODUCTO
-        </button>
+        <button className="btn-editar">EDITAR PRODUCTO</button>
 
         <button className="btn-eliminar" onClick={() => eliminarProducto(producto.id)}>
           ELIMINAR PRODUCTO

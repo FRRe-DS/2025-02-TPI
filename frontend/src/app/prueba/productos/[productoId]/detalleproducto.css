@@ -8,20 +8,21 @@
   font-size: 36px;
   font-weight: 800;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
-/* GRID PRINCIPAL */
+/* ================= GRID PRINCIPAL ================= */
 .detalle-grid {
   display: grid;
-  grid-template-columns: 45% 55%;
+  grid-template-columns: 48% 48%;
+  justify-content: space-between;
   gap: 40px;
 }
 
-/* Espacio grande para imagen */
+/* IMAGEN */
 .detalle-imagen {
   width: 100%;
-  min-height: 350px;
+  height: 380px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -32,11 +33,12 @@
 
 .detalle-imagen img {
   width: 90%;
-  max-height: 350px;
+  height: 100%;
   object-fit: contain;
   border-radius: 10px;
 }
 
+/* DESCRIPCIÓN */
 .detalle-descripcion h2 {
   font-size: 24px;
   margin-bottom: 10px;
@@ -48,11 +50,11 @@
 }
 
 .texto-vacio {
-  color: #555;
   font-style: italic;
+  color: #777;
 }
 
-/* INFO EXTRA */
+/* ================= SECCIÓN INFO EXTRA ================= */
 .detalle-info-extra {
   margin-top: 50px;
   display: flex;
@@ -60,40 +62,50 @@
   gap: 40px;
 }
 
+.info-bloque {
+  flex: 1;
+  text-align: center;
+}
+
+.info-bloque h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
 .precio {
   font-size: 26px;
   font-weight: 700;
 }
 
-/* BADGES DE STOCK */
+/* BADGE STOCK CENTRADO */
 .badge-stock {
   padding: 10px 26px;
   border-radius: 20px;
   font-weight: bold;
   font-size: 18px;
+  display: inline-block;
+  margin-top: 5px;
 }
 
 .stock-rojo {
   background: #ffe0e0;
   color: #c00000;
 }
-
 .stock-amarillo {
   background: #fff6cc;
   color: #a68b00;
 }
-
 .stock-azul {
   background: #d9e7ff;
   color: #0047b3;
 }
-
 .stock-verde {
   background: #d8f8d8;
   color: #176c2a;
 }
 
-/* BOTONES */
+/* ================= BOTONES ================= */
 .detalle-botones {
   margin-top: 50px;
   display: flex;

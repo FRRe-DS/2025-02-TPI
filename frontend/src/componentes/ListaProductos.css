@@ -248,3 +248,59 @@
 .link-detalle:hover {
   text-decoration: underline;
 }
+
+/* ================= TARJETAS SUPERIORES ================= */
+
+.lp-container .lp-cards-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 25px 0 35px;
+  padding: 10px 5px;
+}
+
+/* --- CARD --- */
+.lp-container .lp-card {
+  flex: 1;
+  background: #ffffff !important;
+  border-radius: 14px;
+  padding: 22px 15px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(26, 63, 122, 0.12); /* tono azul de la paleta */
+  transition: 0.2s ease;
+  border: 2px solid #1A3F7A22; /* borde leve con color de la paleta */
+}
+
+.lp-container .lp-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(26, 31, 123, 0.25);
+}
+
+/* --- ICONO --- */
+.lp-container .lp-card-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+  color: #686DDF !important; /* violeta claro */
+}
+
+/* --- TÍTULO --- */
+.lp-container .lp-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #1A1F7B !important; /* azul oscuro */
+}
+
+/* --- NÚMERO --- */
+.lp-container .lp-card-number {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333366 !important;
+}
+
+/* --- Ajuste general del contenedor --- */
+.lp-container {
+  padding: 10px 20px;
+}
+
+
