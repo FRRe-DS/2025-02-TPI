@@ -191,20 +191,17 @@ export default function GestionReservas() {
 
 
   return (
-    <div style={{ marginTop: '2rem' }}>
-      <hr />
-      <h2>Gestión de Reservas (Usuario ID: {USUARIO_ID_PRUEBA})</h2>
-      
+    <div>
       {/* --- Formulario para crear reserva --- */}
-      <h3>Crear Nueva Reserva</h3>
-      <form onSubmit={handleCrearReserva} style={{ marginBottom: '1.5rem', display: 'flex', gap: '5px' }}>
+      <h3 className="text-lg font-bold text-gray-800 mb-4">Crear Nueva Reserva</h3>
+      <form onSubmit={handleCrearReserva} className="mb-6 flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           placeholder="ID de Compra (ej. COMPRA-001)"
           value={idCompra}
           onChange={e => setIdCompra(e.target.value)}
           required
-          style={{ padding: '5px' }}
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
         <input
           type="number"
@@ -212,7 +209,7 @@ export default function GestionReservas() {
           value={prodId}
           onChange={e => setProdId(e.target.value)}
           required
-          style={{ padding: '5px', width: '100px' }}
+          className="w-full sm:w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
         <input
           type="number"
@@ -221,17 +218,27 @@ export default function GestionReservas() {
           onChange={e => setProdCant(Number(e.target.value))}
           required
           min="1"
-          style={{ padding: '5px', width: '80px' }}
+          className="w-full sm:w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
-        <button type="submit" style={{ padding: '5px' }}>Crear Reserva</button>
+        <button
+          type="submit"
+          className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200"
+        >
+          Crear Reserva
+        </button>
       </form>
 
       {/* --- Filtro por Estado --- */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="filtro-estado" style={{ marginRight: '10px', fontWeight: 'bold' }}>
+      <div className="mb-4 flex items-center gap-3">
+        <label htmlFor="filtro-estado" className="font-bold text-gray-700">
           Filtrar por estado:
         </label>
-        <select id="filtro-estado" value={filtroEstado} onChange={handleFiltroEstadoChange} style={{ padding: '5px' }}>
+        <select
+          id="filtro-estado"
+          value={filtroEstado}
+          onChange={handleFiltroEstadoChange}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
           <option value="">Todas</option>
           <option value="pendiente">Pendiente</option>
           <option value="confirmado">Confirmado</option>
@@ -240,17 +247,28 @@ export default function GestionReservas() {
       </div>
 
       {/* --- Lista de reservas existentes --- */}
-      <h3>Reservas Existentes</h3>
-      {cargando ? <p>Cargando reservas...</p> : (
+      <h3 className="text-lg font-bold text-gray-800 mb-4 mt-6">Reservas Existentes</h3>
+      {cargando ? <p className="text-gray-600">Cargando reservas...</p> : (
         reservas.length > 0 ? (
           reservas.map(res => (
-            <div key={res.idReserva} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <strong>Reserva ID: {res.idReserva}</strong> (Compra: {res.idCompra})<br />
-                  <strong>Estado:</strong> {res.estado}<br />
-                  <strong>Productos:</strong>
-                  <ul>
+            <div key={res.idReserva} className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <div className="flex-1">
+                  <p className="font-bold text-gray-800 mb-1">
+                    Reserva ID: {res.idReserva} <span className="font-normal text-gray-600">(Compra: {res.idCompra})</span>
+                  </p>
+                  <p className="mb-2">
+                    <span className="font-semibold">Estado:</span>{' '}
+                    <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${
+                      res.estado === 'confirmado' ? 'bg-green-100 text-green-800' :
+                      res.estado === 'cancelado' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {res.estado}
+                    </span>
+                  </p>
+                  <p className="font-semibold mb-1">Productos:</p>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700">
                      {res.productos && res.productos.length > 0 ? (
                       res.productos.map(p => (
                         <li key={`${res.idReserva}-${p.idProducto}`}>
@@ -258,27 +276,19 @@ export default function GestionReservas() {
                         </li>
                       ))
                     ) : (
-                      <li>(Sin productos detallados)</li>
+                      <li className="text-gray-500">(Sin productos detallados)</li>
                     )}
                   </ul>
                 </div>
-                
+
                 {/* --- Grupo de Botones de Acción --- */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start', flexShrink: 0 }}>
-                  
+                <div className="flex flex-row sm:flex-col gap-2 items-start flex-shrink-0">
+
                   {/* Botón de Confirmar (solo si está pendiente) */}
                   {res.estado && res.estado.trim() === 'pendiente' && (
                     <button
                       onClick={() => handleConfirmarReserva(res.idReserva)}
-                      style={{
-                        backgroundColor: '#28a745', // Verde
-                        color: 'white',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        width: '100px' // Ancho fijo
-                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 w-full sm:w-28"
                     >
                       Confirmar
                     </button>
@@ -288,15 +298,7 @@ export default function GestionReservas() {
                   {res.estado && res.estado.trim() !== 'cancelado' && (
                     <button
                       onClick={() => handleCancelarReserva(res.idReserva)}
-                      style={{
-                        backgroundColor: '#dc3545', // Rojo
-                        color: 'white',
-                        border: 'none',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        width: '100px' // Ancho fijo
-                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 w-full sm:w-28"
                     >
                       Cancelar
                     </button>
@@ -307,24 +309,24 @@ export default function GestionReservas() {
             </div>
           ))
         ) : (
-          <p>No se encontraron reservas para este filtro.</p>
+          <p className="text-gray-600 text-center py-8">No se encontraron reservas para este filtro.</p>
         )
       )}
-      
+
       {/* --- Paginación --- */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-        <button 
-          onClick={handlePaginaAnterior} 
+      <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+        <button
+          onClick={handlePaginaAnterior}
           disabled={currentPage === 1 || cargando}
-          style={{ padding: '8px 12px' }}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
         >
           Anterior
         </button>
-        <span>Página: {currentPage}</span>
-        <button 
-          onClick={handlePaginaSiguiente} 
+        <span className="font-medium text-gray-700">Página: {currentPage}</span>
+        <button
+          onClick={handlePaginaSiguiente}
           disabled={isLastPage || cargando}
-          style={{ padding: '8px 12px' }}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
         >
           Siguiente
         </button>

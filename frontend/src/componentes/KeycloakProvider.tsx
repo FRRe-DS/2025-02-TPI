@@ -1,7 +1,7 @@
 'use client'; 
 
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import keycloak from '../lib/keycloak'; 
+import keycloak from '../lib/keycloak';
 
 // 1. ACTUALIZAMOS EL CONTEXTO
 // Ahora compartirá 'authenticated' Y 'loading'
@@ -20,7 +20,7 @@ export const useAuth = () => useContext(KeycloakContext);
 
 export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initKeycloak = async () => {
@@ -31,21 +31,20 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
       }
       
       try {
-        // Esta es la ÚNICA inicialización
-        const auth = await keycloak.init({ 
-          onLoad: 'check-sso',
-          checkLoginIframe: false 
-        });
-        
+        // Verificar si ya hay un token guardado
+        const auth = keycloak.authenticated || false;
         setAuthenticated(auth);
         
-        if (auth) {
+        if (auth && keycloak.token) {
           // Configurar el refresco automático del token
           setInterval(() => {
             keycloak?.updateToken(70) 
               .catch(() => {
                 console.error('Error al refrescar el token');
-                keycloak?.logout();
+                if (keycloak) {
+                  keycloak.authenticated = false;
+                }
+                setAuthenticated(false);
               });
           }, 60000); 
         }

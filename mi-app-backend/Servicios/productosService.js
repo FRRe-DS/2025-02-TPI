@@ -173,7 +173,6 @@ const crearProducto = async (datosProducto) => {
     .insert({
       nombre: nombre,
       descripcion: descripcion,
-      categoriaIds: categoriaIds,
       precio_unitario: precio,
       stock_disponible: stockInicial,
       dimensiones: dimensiones, 

@@ -12,7 +12,7 @@ import keycloak from '../lib/keycloak';
  * - Maneja las respuestas (JSON) y los errores.
  */
 async function fetchConAuth(endpoint, options = {}) {
-  const token = (typeof window !== 'undefined' && keycloak.token) 
+  const token = (typeof window !== 'undefined' && keycloak?.token) 
     ? keycloak.token 
     : null;
 
@@ -56,7 +56,7 @@ async function fetchConAuth(endpoint, options = {}) {
     
     if (res.status === 401 && token) {
       console.warn('Token expirado (401), intentando refrescar...');
-      keycloak?.updateToken(30).catch(() => keycloak.logout());
+      keycloak?.updateToken(30).catch(() => keycloak?.logout());
     }
     
     throw new Error(errorMessage);
@@ -82,29 +82,29 @@ export async function obtenerProductos(filtros = {}) {
   if (q) params.append('q', q);
   if (categoriaId && categoriaId > 0) params.append('categoriaId', categoriaId.toString());
   
-  return fetchConAuth(`/productos?${params.toString()}`);
+  return fetchConAuth(`/api/v1/productos?${params.toString()}`);
 }
 
 export async function obtenerProductoPorId(id) {
-  return fetchConAuth(`/productos/${id}`);
+  return fetchConAuth(`/api/v1/productos/${id}`);
 }
 
 export async function agregarProducto(productoData) { 
-  return fetchConAuth(`/productos`, {
+  return fetchConAuth(`/api/v1/productos`, {
     method: 'POST',
     body: JSON.stringify(productoData)
   });
 }
 
 export async function actualizarProducto(productoId, datosActualizados) {
-  return fetchConAuth(`/productos/${productoId}`, {
+  return fetchConAuth(`/api/v1/productos/${productoId}`, {
     method: 'PATCH',
     body: JSON.stringify(datosActualizados) 
   });
 }
 
 export async function eliminarProducto(productoId) {
-  return fetchConAuth(`/productos/${productoId}`, {
+  return fetchConAuth(`/api/v1/productos/${productoId}`, {
     method: 'DELETE'
   });
 }
@@ -112,25 +112,25 @@ export async function eliminarProducto(productoId) {
 // --- CATEGORÍAS ---
 
 export async function obtenerCategorias() {
-  return fetchConAuth(`/categorias`);
+  return fetchConAuth(`/api/v1/categorias`);
 }
 
 export async function crearCategoria(categoriaData) {
-  return fetchConAuth(`/categorias`, {
+  return fetchConAuth(`/api/v1/categorias`, {
     method: 'POST',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function actualizarCategoria(id, categoriaData) {
-  return fetchConAuth(`/categorias/${id}`, {
+  return fetchConAuth(`/api/v1/categorias/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function eliminarCategoria(id) {
-  return fetchConAuth(`/categorias/${id}`, {
+  return fetchConAuth(`/api/v1/categorias/${id}`, {
     method: 'DELETE'
   });
 }
@@ -138,7 +138,7 @@ export async function eliminarCategoria(id) {
 // --- RESERVAS ---
 
 export async function crearReserva(reservaData) {
-  return fetchConAuth(`/reservas`, {
+  return fetchConAuth(`/api/v1/reservas`, {
     method: 'POST',
     body: JSON.stringify(reservaData)
   });
@@ -155,11 +155,11 @@ export async function obtenerReservas(filtros = {}) {
   params.append('limit', limit.toString());
   if (estado) params.append('estado', estado);
 
-  return fetchConAuth(`/reservas?${params.toString()}`); 
+  return fetchConAuth(`/api/v1/reservas?${params.toString()}`); 
 }
 
 export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
-  return fetchConAuth(`/reservas/${reservaId}`, {
+  return fetchConAuth(`/api/v1/reservas/${reservaId}`, {
     method: 'PATCH',
     body: JSON.stringify({ 
       usuarioId: usuarioId, 
@@ -169,7 +169,7 @@ export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
 }
 
 export async function cancelarReserva(reservaId, motivo) {
-  return fetchConAuth(`/reservas/${reservaId}`, {
+  return fetchConAuth(`/api/v1/reservas/${reservaId}`, {
     method: 'DELETE',
     body: JSON.stringify({ motivo: motivo }) 
   });
