@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    networks:
+      - ds-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.6
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY: edge
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./2025-TPI/keycloak/realm-config:/opt/keycloak/data/import
+    depends_on:
+      - keycloak-db
+    command: start-dev --import-realm
+    networks:
+      - ds-network
+
+  backend:
+    build:
+      context: ./mi-app-backend
+      dockerfile: Dockerfile
+    container_name: stock-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - SUPABASE_URL=https://tznhwyxgkbkhrfjldmfz.supabase.co
+      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6bmh3eXhna2JraHJmamxkbWZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MzcxNjMsImV4cCI6MjA3NTAxMzE2M30.DOcz00RPnRBdDj3rWq9MMT5KUDmcA21KJtT2CWNHwZU
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=ds-2025-realm
+      - KEYCLOAK_CLIENT_ID=grupo-02
+      - KEYCLOAK_CLIENT_SECRET=grupo-02-secret
+    depends_on:
+      - keycloak
+    networks:
+      - ds-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost
+        - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
+        - NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
+        - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
+    container_name: stock-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost
+      - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
+      - NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
+    depends_on:
+      - backend
+    networks:
+      - ds-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - ds-network
+
+networks:
+  ds-network:
+    driver: bridge
+
+volumes:
+  keycloak_data:

@@ -133,139 +133,212 @@ export default function FormularioProducto({ onProductoAgregado }: Props) {
     }
   };
 
-  // --- ESTILOS ---
-  const styles: { [key: string]: React.CSSProperties } = {
-    form: {
-      padding: '15px',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-      marginBottom: '2rem',
-      backgroundColor: '#f9f9f9'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-      gap: '15px'
-    },
-    section: {
-      border: '1px solid #ddd',
-      padding: '10px',
-      borderRadius: '5px'
-    },
-    inputGroup: {
-      marginBottom: '10px'
-    },
-    label: {
-      display: 'block',
-      fontWeight: 'bold',
-      marginBottom: '5px'
-    },
-    input: {
-      width: '100%',
-      padding: '8px',
-      boxSizing: 'border-box'
-    },
-    button: {
-      marginTop: '15px',
-      padding: '10px 15px',
-      backgroundColor: '#007bff',
-      color: 'white',
-      border: 'none',
-      borderRadius: '5px',
-      cursor: 'pointer'
-    }
-  };
-
   // --- RENDERIZADO ---
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <h3>Agregar Nuevo Producto</h3>
-      <div style={styles.grid}>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">Agregar Nuevo Producto</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Sección Principal */}
-        <div style={styles.section}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Nombre:</label>
-            <input style={styles.input} type="text" name="nombre" value={formData.nombre} onChange={handleChange} required />
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
+          <h4 className="font-semibold text-gray-900 text-lg mb-4">Información General</h4>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto</label>
+            <input 
+              className="input-modern" 
+              type="text" 
+              name="nombre" 
+              value={formData.nombre} 
+              onChange={handleChange} 
+              placeholder="Ej: RTX 4090 ASUS ROG"
+              required 
+            />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Descripción:</label>
-            <input style={styles.input} type="text" name="descripcion" value={formData.descripcion} onChange={handleChange} />
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <input 
+              className="input-modern" 
+              type="text" 
+              name="descripcion" 
+              value={formData.descripcion} 
+              onChange={handleChange}
+              placeholder="Descripción del producto"
+            />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Categorías:</label>
-            <div style={{ maxHeight: '100px', overflowY: 'auto', border: '1px solid #ddd', padding: '5px', backgroundColor: 'white' }}>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Categorías</label>
+            <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2">
               {categorias.length > 0 ? categorias.map(cat => (
-                <div key={cat.id}>
+                <label key={cat.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors">
                   <input
                     type="checkbox"
                     id={`cat-add-${cat.id}`}
                     value={cat.id}
                     onChange={handleCategoryChange}
-                    // El checkbox está marcado si el ID está en el array
                     checked={formData.categoriaIds.includes(cat.id)}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <label htmlFor={`cat-add-${cat.id}`} style={{ marginLeft: '5px' }}>{cat.nombre}</label>
-                </div>
-              )) : <small>Cargando categorías...</small>}
+                  <span className="text-sm text-gray-700">{cat.nombre}</span>
+                </label>
+              )) : <small className="text-gray-500">Cargando categorías...</small>}
             </div>
           </div>
         </div>
         
 
         {/* Sección Inventario */}
-        <div style={styles.section}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Precio:</label>
-            <input style={styles.input} type="number" name="precio" value={formData.precio} onChange={handleChange} required min="0" step="0.01" />
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
+          <h4 className="font-semibold text-gray-900 text-lg mb-4">Inventario y Precio</h4>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Precio (USD)</label>
+            <input 
+              className="input-modern" 
+              type="number" 
+              name="precio" 
+              value={formData.precio} 
+              onChange={handleChange} 
+              placeholder="0.00"
+              required 
+              min="0" 
+              step="0.01" 
+            />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Stock Inicial:</label>
-            <input style={styles.input} type="number" name="stockInicial" value={formData.stockInicial} onChange={handleChange} required min="0" step="1" />
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Stock Inicial</label>
+            <input 
+              className="input-modern" 
+              type="number" 
+              name="stockInicial" 
+              value={formData.stockInicial} 
+              onChange={handleChange} 
+              placeholder="0"
+              required 
+              min="0" 
+              step="1" 
+            />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Peso (Kg):</label>
-            <input style={styles.input} type="number" name="pesoKg" value={formData.pesoKg} onChange={handleChange} min="0" step="0.1" />
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Peso (Kg)</label>
+            <input 
+              className="input-modern" 
+              type="number" 
+              name="pesoKg" 
+              value={formData.pesoKg} 
+              onChange={handleChange} 
+              placeholder="0.0"
+              min="0" 
+              step="0.1" 
+            />
           </div>
         </div>
 
-        {/* Sección Dimensiones (CORREGIDA) */}
-        <div style={styles.section}>
-          <strong>Dimensiones (cm):</strong>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Largo:</label>
-            <input style={styles.input} type="number" name="largoCm" value={formData.dimensiones.largoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" step="0.1" />
+        {/* Sección Dimensiones */}
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
+          <h4 className="font-semibold text-gray-900 text-lg mb-4">Dimensiones (cm)</h4>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Largo</label>
+            <input 
+              className="input-modern" 
+              type="number" 
+              name="largoCm" 
+              value={formData.dimensiones.largoCm} 
+              onChange={e => handleNestedChange(e, 'dimensiones')} 
+              placeholder="0.0"
+              min="0" 
+              step="0.1" 
+            />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Ancho:</label>
-            <input style={styles.input} type="number" name="anchoCm" value={formData.dimensiones.anchoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" step="0.1" />
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Ancho</label>
+            <input 
+              className="input-modern" 
+              type="number" 
+              name="anchoCm" 
+              value={formData.dimensiones.anchoCm} 
+              onChange={e => handleNestedChange(e, 'dimensiones')} 
+              placeholder="0.0"
+              min="0" 
+              step="0.1" 
+            />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Alto:</label>
-            <input style={styles.input} type="number" name="altoCm" value={formData.dimensiones.altoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" step="0.1" />
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Alto</label>
+            <input 
+              className="input-modern" 
+              type="number" 
+              name="altoCm" 
+              value={formData.dimensiones.altoCm} 
+              onChange={e => handleNestedChange(e, 'dimensiones')} 
+              placeholder="0.0"
+              min="0" 
+              step="0.1" 
+            />
           </div>
         </div>
         
         {/* Sección Ubicación */}
-        <div style={styles.section}>
-          <strong>Ubicación:</strong>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Calle:</label>
-            <input style={styles.input} type="text" name="street" value={formData.ubicacion.street} onChange={e => handleNestedChange(e, 'ubicacion')} />
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4 md:col-span-2">
+          <h4 className="font-semibold text-gray-900 text-lg mb-4">Ubicación del Producto</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Calle</label>
+              <input 
+                className="input-modern" 
+                type="text" 
+                name="street" 
+                value={formData.ubicacion.street} 
+                onChange={e => handleNestedChange(e, 'ubicacion')}
+                placeholder="Dirección"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
+              <input 
+                className="input-modern" 
+                type="text" 
+                name="city" 
+                value={formData.ubicacion.city} 
+                onChange={e => handleNestedChange(e, 'ubicacion')}
+                placeholder="Ciudad"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">País (Cód.)</label>
+              <input 
+                className="input-modern" 
+                type="text" 
+                name="country" 
+                value={formData.ubicacion.country} 
+                onChange={e => handleNestedChange(e, 'ubicacion')}
+                placeholder="AR"
+                maxLength={2}
+              />
+            </div>
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Ciudad:</label>
-            <input style={styles.input} type="text" name="city" value={formData.ubicacion.city} onChange={e => handleNestedChange(e, 'ubicacion')} />
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>País (Cód. 2):</label>
-            <input style={styles.input} type="text" name="country" value={formData.ubicacion.country} onChange={e => handleNestedChange(e, 'ubicacion')} />
-          </div>
-          {/* (Puedes añadir inputs para state y postal_code aquí) */}
         </div>
 
       </div>
-      <button type="submit" style={styles.button}>Agregar Producto</button>
+      
+      <div className="flex justify-end pt-4">
+        <button 
+          type="submit" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+        >
+          Agregar Producto
+        </button>
+      </div>
     </form>
   );
 }

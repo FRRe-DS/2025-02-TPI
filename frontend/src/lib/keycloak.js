@@ -7,9 +7,9 @@ let keycloakInstance;
 
 if (typeof window !== 'undefined') {
   keycloakInstance = new Keycloak({
-    url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080',
-    realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'tu-realm',
-    clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'tu-frontend-client-id'
+    url: process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8081',
+    realm: process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'ds-2025-realm',
+    clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'grupo-02'
   });
 }
 
