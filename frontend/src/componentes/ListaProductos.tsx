@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -261,7 +260,7 @@ if (orden === "precio-desc") {
                   <td className="acciones-col">
                     <a
                       className="link-detalle"
-                      href={`/prueba/productos/${p.id}`}
+                      href={`/producto/detalle/${p.id}`}
                     >
                       Detalle
                     </a>

@@ -47,9 +47,9 @@ export default function ProductosDropdown() {
         style={{ backgroundColor: "#333366" }}>
 
           {/* Productos */}
-           <div className="px-2 py-1 text-xs opacity-70">Productos</div>
+          <div className="px-2 py-1 text-xs opacity-70">Productos</div>
           <Link
-            href="/productos"
+            href="/producto/lista"
             className="flex items-center gap-2 p-2 rounded hover:bg-white/10 transition"
           >
             <FaBox />
@@ -57,7 +57,7 @@ export default function ProductosDropdown() {
           </Link>
 
           <Link
-            href="/productos/agregar"
+            href="/producto/agregar"
             className="flex items-center gap-2 p-2 rounded hover:bg-white/10 transition"
           >
             <FaPlus />
