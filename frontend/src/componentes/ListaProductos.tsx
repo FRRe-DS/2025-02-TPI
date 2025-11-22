@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // la poderosa solucion al problema de detalles
 import {
   obtenerProductos,
   eliminarProducto,
@@ -9,7 +10,7 @@ import {
   obtenerProductoPorId,
 } from "../servicios/api";
 
-import "./ListaProductos.css"; // CSS PURO
+import "./ListaProductos.css";
 
 // ---------- INTERFACES ----------
 export interface Categoria {
@@ -60,6 +61,8 @@ const LIMIT_POR_PAGINA = 5;
 // =======================================================
 
 export default function ListaProductos({ actualizar }: Props) {
+  const router = useRouter();
+
   const [productos, setProductos] = useState<Producto[]>([]);
   const [todasCategorias, setTodasCategorias] = useState<Categoria[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -145,30 +148,30 @@ export default function ListaProductos({ actualizar }: Props) {
   // LISTA A MOSTRAR (búsqueda o lista general)
   let listaParaMostrar = searchedProduct ? [searchedProduct] : [...productos];
 
-// ----- ORDENAMIENTO -----
-if (orden === "az") {
-  listaParaMostrar.sort((a, b) => a.nombre.localeCompare(b.nombre));
-}
+  // ----- ORDENAMIENTO -----
+  if (orden === "az") {
+    listaParaMostrar.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
 
-if (orden === "za") {
-  listaParaMostrar.sort((a, b) => b.nombre.localeCompare(a.nombre));
-}
+  if (orden === "za") {
+    listaParaMostrar.sort((a, b) => b.nombre.localeCompare(a.nombre));
+  }
 
-if (orden === "precio-asc") {
-  listaParaMostrar.sort((a, b) => a.precio - b.precio);
-}
+  if (orden === "precio-asc") {
+    listaParaMostrar.sort((a, b) => a.precio - b.precio);
+  }
 
-if (orden === "precio-desc") {
-  listaParaMostrar.sort((a, b) => b.precio - a.precio);
-}
+  if (orden === "precio-desc") {
+    listaParaMostrar.sort((a, b) => b.precio - a.precio);
+  }
 
 
   // ---------- FUNCIÓN PARA COLORES DEL STOCK ----------
   const getStockClass = (cantidad: number) => {
-   if (cantidad <= 5) return "badge-stock rojo";         // crítico
-  if (cantidad <= 20) return "badge-stock amarillo";    // bajo
-  if (cantidad <= 100) return "badge-stock azul";       // medio
-  return "badge-stock verde";                           // alto
+    if (cantidad <= 5) return "badge-stock rojo";         
+    if (cantidad <= 20) return "badge-stock amarillo";    
+    if (cantidad <= 100) return "badge-stock azul";       
+    return "badge-stock verde";                           
   };
 
   return (
@@ -178,44 +181,41 @@ if (orden === "precio-desc") {
       {/* ---------------- FILTROS ---------------- */}
       <div className="filtros-row">
 
-<div className="filtros-row">
+        {/* BUSCADOR GENERAL */}
+        <input
+          type="text"
+          placeholder="Buscar por ID o nombre..."
+          value={filtroTexto}
+          onChange={(e) => {
+            setSearchedProduct(null);
+            setFiltroTexto(e.target.value);
+          }}
+        />
 
-  {/* 🔍 BUSCADOR GENERAL */}
-  <input
-    type="text"
-    placeholder="Buscar por ID o nombre..."
-    value={filtroTexto}
-    onChange={(e) => {
-      setSearchedProduct(null);
-      setFiltroTexto(e.target.value);
-    }}
-  />
+        {/* CATEGORÍAS */}
+        <select
+          value={filtroCategoria}
+          onChange={(e) => setFiltroCategoria(Number(e.target.value))}
+        >
+          <option value={0}>Todas las categorías</option>
+          {todasCategorias.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.nombre}
+            </option>
+          ))}
+        </select>
 
-  {/* 🔽 CATEGORÍAS */}
-  <select
-    value={filtroCategoria}
-    onChange={(e) => setFiltroCategoria(Number(e.target.value))}
-  >
-    <option value={0}>Todas las categorías</option>
-    {todasCategorias.map((cat) => (
-      <option key={cat.id} value={cat.id}>
-        {cat.nombre}
-      </option>
-    ))}
-  </select>
-
-  {/* ↕️ ORDENAMIENTO */}
-  <select
-    value={orden}
-    onChange={(e) => setOrden(e.target.value)}
-  >
-    <option value="">Ordenar por…</option>
-    <option value="az">Nombre A → Z</option>
-    <option value="za">Nombre Z → A</option>
-    <option value="precio-asc">Precio menor → mayor</option>
-    <option value="precio-desc">Precio mayor → menor</option>
-  </select>
-</div>
+        {/* ORDENAMIENTO */}
+        <select
+          value={orden}
+          onChange={(e) => setOrden(e.target.value)}
+        >
+          <option value="">Ordenar por…</option>
+          <option value="az">Nombre A → Z</option>
+          <option value="za">Nombre Z → A</option>
+          <option value="precio-asc">Precio menor → mayor</option>
+          <option value="precio-desc">Precio mayor → menor</option>
+        </select>
 
       </div>
 
@@ -258,12 +258,19 @@ if (orden === "precio-desc") {
                   </td>
 
                   <td className="acciones-col">
-                    <a
+                    <button
                       className="link-detalle"
-                      href={`/producto/detalle/${p.id}`}
+                      onClick={() => router.push(`/producto/detalle/${p.id}`)}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        font: 'inherit'
+                      }}
                     >
                       Detalle
-                    </a>
+                    </button>
                   </td>
 
                 </tr>
