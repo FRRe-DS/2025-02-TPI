@@ -29,7 +29,11 @@ const crearReserva = async (req, res) => {
   } catch (error) {
     // 5. MANEJO DE ERRORES
     // Si el 'servicioReservas' lanza un error (throw), este 'catch' lo atrapará.
-    console.error('Error en controlador al crear reserva:', error);
+    console.error('Error en controlador al crear reserva:', error.message);
+    
+    if(/stock insuficiente/i.test(error.message)) {
+      return res.status(400).json({ error: error.message, code: 'STOCK_INSUFICIENTE' });
+    }
     res.status(500).json({ mensaje: "Error interno del servidor", error: error.message });
   }
 };
