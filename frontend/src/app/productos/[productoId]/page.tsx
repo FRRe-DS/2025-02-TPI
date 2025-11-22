@@ -105,7 +105,7 @@ export default function DetalleProductoPage({ params }: DetalleProductoPageProps
 
       {/* ---------- BOTÓN VOLVER ---------- */}
       <div className="volver-container">
-        <Link href="/prueba">
+        <Link href="/dashboard">
           <button className="btn-volver">Volver</button>
         </Link>
       </div>

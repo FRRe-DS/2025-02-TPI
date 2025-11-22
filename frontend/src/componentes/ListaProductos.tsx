@@ -235,7 +235,7 @@ export default function ListaProductos({ actualizar }: Props) {
                   </td>
 
                   <td className="acciones-col">
-                    <a className="link-detalle" href={`/prueba/productos/${p.id}`}>
+                    <a className="link-detalle" href={`/productos/${p.id}`}>
                       Detalle
                     </a>
                   </td>

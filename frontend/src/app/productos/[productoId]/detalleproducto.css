@@ -54,39 +54,47 @@
   color: #777;
 }
 
-/* ================= SECCIÓN INFO EXTRA ================= */
+/* ================= SECCIÓN INFO EXTRA (MEJORADA) ================= */
+
 .detalle-info-extra {
   margin-top: 50px;
-  display: flex;
-  justify-content: space-between;
-  gap: 40px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas iguales */
+  gap: 30px;
 }
 
 .info-bloque {
-  flex: 1;
+  background: #fff;
+  padding: 25px 20px;
+  border-radius: 12px;
   text-align: center;
+  box-shadow: 0 4px 10px rgba(26, 63, 122, 0.08); /* mismo estilo dashboard */
+  border: 1px solid #dfe3f0;
+  min-height: 180px; /* todas las tarjetas mismo alto */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .info-bloque h3 {
   margin-bottom: 10px;
   font-size: 20px;
   font-weight: 700;
+  color: #1A3F7A; /* azul de la paleta */
 }
 
 .precio {
   font-size: 26px;
   font-weight: 700;
+  margin-top: 10px;
+  color: #333366;
 }
 
-/* BADGE STOCK CENTRADO */
-.badge-stock {
-  padding: 10px 26px;
-  border-radius: 20px;
-  font-weight: bold;
-  font-size: 18px;
-  display: inline-block;
-  margin-top: 5px;
+/* centrar el badge */
+.info-bloque .badge-stock {
+  margin-top: 15px;
 }
+
 
 .stock-rojo {
   background: #ffe0e0;
