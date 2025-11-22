@@ -5,6 +5,8 @@ import Link from "next/link";
 import { FaBell, FaChevronDown, FaUserCircle } from "react-icons/fa";
 import {LogoutButton} from "../LogoutButton";
 import  DropDown from "./DropDown";
+import ProductosDropdown from "./ProductosDropDown";  
+import ReservasDropDown from "./ReservasDropDown";
 
 
 export default function Navbar() {
@@ -16,7 +18,7 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {/* Logo */}
         
-        <Link href="/" className="hover:underline">
+        <Link href="/dashboard" className="hover:underline">
         <Image
           src="/logo.png" 
           alt="Logo"
@@ -31,19 +33,15 @@ export default function Navbar() {
 
         {/* Menu */}
         <div className="flex items-center gap-6 text-sm">
-          <Link href="/" className="hover:underline">
-            Inicio
-          </Link>
-          <Link href="/productos" className="hover:underline">
-            Productos
-          </Link>
+          {/* Dropdown de Productos y Reservas*/} 
+           <ProductosDropdown />
           <Link href="/categorias" className="hover:underline">
             Categorías
           </Link>
-          <Link href="/reservas" className="hover:underline">
-            Reservas
-          </Link>
+          <ReservasDropDown/ >
+         
         </div>
+        
       </div>
 
       {/* DERECHA */}
