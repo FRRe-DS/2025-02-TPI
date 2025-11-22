@@ -29,11 +29,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Header Navbar */}
+      {/* Header Navbar 
       <header className="bg-[#1A3F7A] text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Logo y Navegación */}
+          <div className="flex items-center justify-between">*/}
+            {/* Logo y Navegación 
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
@@ -74,9 +74,9 @@ export default function DashboardPage() {
                   Agregar Producto
                 </button>
               </nav>
-            </div>
+            </div>*/}
 
-            {/* Perfil */}
+            {/* Perfil 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2 cursor-pointer hover:bg-white/20 transition-colors">
                 <div className="w-8 h-8 bg-white rounded-full overflow-hidden">
@@ -87,7 +87,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </header>
+      </header>*/}
 
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">

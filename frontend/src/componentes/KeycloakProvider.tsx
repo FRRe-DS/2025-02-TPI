@@ -1,21 +1,31 @@
-'use client'; 
+'use client';
 
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import keycloak from '../lib/keycloak';
+import React, {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from 'react';
 
-// 1. ACTUALIZAMOS EL CONTEXTO
-// Ahora compartirá 'authenticated' Y 'loading'
+import keycloak from "../lib/keycloak";
+
+let keycloakHasBeenInitialized = false;  // ⭐ evita doble init
+
 interface IKeycloakContext {
   authenticated: boolean;
-  loading: boolean; 
+  loading: boolean;
+  login: () => void;
+  logout: () => void;
 }
 
-const KeycloakContext = createContext<IKeycloakContext>({ 
-  authenticated: false, 
-  loading: true // Por defecto, siempre está cargando
+const KeycloakContext = createContext<IKeycloakContext>({
+  authenticated: false,
+  loading: true,
+  login: () => {},
+  logout: () => {},
 });
 
-// 2. Renombramos el hook a 'useAuth' (más claro)
 export const useAuth = () => useContext(KeycloakContext);
 
 export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
@@ -23,45 +33,47 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initKeycloak = async () => {
-      if (!keycloak) {
-        console.error("Keycloak no está inicializado (probablemente en SSR)");
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        // Verificar si ya hay un token guardado
-        const auth = keycloak.authenticated || false;
-        setAuthenticated(auth);
-        
-        if (auth && keycloak.token) {
-          // Configurar el refresco automático del token
-          setInterval(() => {
-            keycloak?.updateToken(70) 
-              .catch(() => {
-                console.error('Error al refrescar el token');
-                if (keycloak) {
-                  keycloak.authenticated = false;
-                }
-                setAuthenticated(false);
-              });
-          }, 60000); 
-        }
-        
-      } catch (error) {
-        console.error("Fallo al inicializar Keycloak", error);
-      } finally {
-        setLoading(false); // Terminamos de cargar
-      }
-    };
+    if (!keycloak) return;
 
-    initKeycloak();
+    // ⭐ Evitar doble inicialización
+    if (!keycloakHasBeenInitialized) {
+      keycloakHasBeenInitialized = true;
+
+      keycloak
+        .init({
+          onLoad: "check-sso",
+          checkLoginIframe: false,
+        })
+        .then((auth) => {
+          setAuthenticated(auth);
+
+          if (auth) {
+            localStorage.setItem("kc_token", keycloak!.token || "");
+            localStorage.setItem("kc_refresh", keycloak!.refreshToken || "");
+            localStorage.setItem("kc_id", keycloak!.idToken || "");
+          }
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // Ya está inicializado → solo usar estado existente
+      setAuthenticated(keycloak.authenticated ?? false);
+      setLoading(false);
+    }
   }, []);
 
-  // Pasamos 'loading' y 'authenticated' al contexto
+  const login = () => keycloak!.login();
+
+  const logout = () => {
+    localStorage.removeItem("kc_token");
+    localStorage.removeItem("kc_refresh");
+    localStorage.removeItem("kc_id");
+    keycloak!.logout({ redirectUri: window.location.origin });
+  };
+
   return (
-    <KeycloakContext.Provider value={{ authenticated, loading }}>
+    <KeycloakContext.Provider
+      value={{ authenticated, loading, login, logout }}
+    >
       {children}
     </KeycloakContext.Provider>
   );

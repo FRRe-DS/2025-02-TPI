@@ -82,29 +82,29 @@ export async function obtenerProductos(filtros = {}) {
   if (q) params.append('q', q);
   if (categoriaId && categoriaId > 0) params.append('categoriaId', categoriaId.toString());
   
-  return fetchConAuth(`/api/v1/productos?${params.toString()}`);
+  return fetchConAuth(`/productos?${params.toString()}`);
 }
 
 export async function obtenerProductoPorId(id) {
-  return fetchConAuth(`/api/v1/productos/${id}`);
+  return fetchConAuth(`/productos/${id}`);
 }
 
 export async function agregarProducto(productoData) { 
-  return fetchConAuth(`/api/v1/productos`, {
+  return fetchConAuth(`/productos`, {
     method: 'POST',
     body: JSON.stringify(productoData)
   });
 }
 
 export async function actualizarProducto(productoId, datosActualizados) {
-  return fetchConAuth(`/api/v1/productos/${productoId}`, {
+  return fetchConAuth(`/productos/${productoId}`, {
     method: 'PATCH',
     body: JSON.stringify(datosActualizados) 
   });
 }
 
 export async function eliminarProducto(productoId) {
-  return fetchConAuth(`/api/v1/productos/${productoId}`, {
+  return fetchConAuth(`/productos/${productoId}`, {
     method: 'DELETE'
   });
 }
@@ -112,25 +112,25 @@ export async function eliminarProducto(productoId) {
 // --- CATEGORÍAS ---
 
 export async function obtenerCategorias() {
-  return fetchConAuth(`/api/v1/categorias`);
+  return fetchConAuth(`/categorias`);
 }
 
 export async function crearCategoria(categoriaData) {
-  return fetchConAuth(`/api/v1/categorias`, {
+  return fetchConAuth(`/categorias`, {
     method: 'POST',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function actualizarCategoria(id, categoriaData) {
-  return fetchConAuth(`/api/v1/categorias/${id}`, {
+  return fetchConAuth(`/categorias/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function eliminarCategoria(id) {
-  return fetchConAuth(`/api/v1/categorias/${id}`, {
+  return fetchConAuth(`/categorias/${id}`, {
     method: 'DELETE'
   });
 }
@@ -138,7 +138,7 @@ export async function eliminarCategoria(id) {
 // --- RESERVAS ---
 
 export async function crearReserva(reservaData) {
-  return fetchConAuth(`/api/v1/reservas`, {
+  return fetchConAuth(`/reservas`, {
     method: 'POST',
     body: JSON.stringify(reservaData)
   });
@@ -155,11 +155,11 @@ export async function obtenerReservas(filtros = {}) {
   params.append('limit', limit.toString());
   if (estado) params.append('estado', estado);
 
-  return fetchConAuth(`/api/v1/reservas?${params.toString()}`); 
+  return fetchConAuth(`/reservas?${params.toString()}`); 
 }
 
 export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
-  return fetchConAuth(`/api/v1/reservas/${reservaId}`, {
+  return fetchConAuth(`/reservas/${reservaId}`, {
     method: 'PATCH',
     body: JSON.stringify({ 
       usuarioId: usuarioId, 
@@ -169,7 +169,7 @@ export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
 }
 
 export async function cancelarReserva(reservaId, motivo) {
-  return fetchConAuth(`/api/v1/reservas/${reservaId}`, {
+  return fetchConAuth(`/reservas/${reservaId}`, {
     method: 'DELETE',
     body: JSON.stringify({ motivo: motivo }) 
   });

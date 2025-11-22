@@ -3,7 +3,7 @@
 import Keycloak from 'keycloak-js';
 
 // NOTA: Este código solo se ejecutará en el navegador.
-let keycloakInstance;
+let keycloakInstance = null;
 
 if (typeof window !== 'undefined') {
   keycloakInstance = new Keycloak({
@@ -12,7 +12,6 @@ if (typeof window !== 'undefined') {
     clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'grupo-02'
   });
 }
-
 /**
  * Esta es la instancia de Keycloak que se importará en toda la aplicación,
  * incluido tu archivo 'api.js'.
