@@ -2,7 +2,7 @@
 
 // Importamos el cliente de Supabase que creamos
 import supabase from '../dbConfig.js';
-
+import productosService from './productosService.js';
 
 /**
  * ======================================================
@@ -25,12 +25,27 @@ const crearNuevaReserva = async (datosReserva) => {
 
   // 2. Manejar errores
   if (error) {
-    console.error('Error en RPC al crear reserva:', error);
-    // Errores de 'RAISE EXCEPTION' (como "Stock insuficiente")
-    // vendrán en 'error.message'.
-    throw new Error(error.message);
+    const esErrorDeStock = /stock insuficiente/i.test(error.message);
+    if (esErrorDeStock) {
+      console.log('Error de stock detectado al crear reserva:');
+      
+      const match = error.message.match(/Producto ID: (\d+)/i);
+      if (match) {
+        const productoIdSinStock = parseInt(match[1], 10);
+        const productoPedido = productos.find(p => p.idProducto === productoIdSinStock);
+        const productoActual = await productosService.buscarProductoPorId(productoIdSinStock);
+        
+        if (productoPedido && productoActual) {
+          comprasService.notificarFaltaDeStock(
+            productoIdSinStock,
+            productoPedido.cantidad,
+            productoActual.stockDisponible
+          );
+        }
+      }  
   }
-
+  throw new Error(error.message);
+}
   // 3. Devolver la reserva en el formato 'ReservaOutput'
   // La RPC devuelve la fila de la BD, la mapeamos al formato de la API
   return _mapReservaToOutput(data);
