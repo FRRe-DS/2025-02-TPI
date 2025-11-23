@@ -1,0 +1,240 @@
+.detalle-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.titulo {
+  font-size: 36px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* ================= GRID PRINCIPAL ================= */
+.detalle-grid {
+  display: grid;
+  grid-template-columns: 48% 48%;
+  justify-content: space-between;
+  gap: 40px;
+  align-items: start;
+}
+
+/* --- COLUMNA IZQUIERDA (GALERÍA) --- */
+.columna-galeria {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* CONTENEDOR IMAGEN PRINCIPAL (Ahora con position relative para las flechas) */
+.imagen-principal-container {
+  width: 100%;
+  height: 380px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  position: relative; /* CLAVE para posicionar las flechas */
+}
+
+.imagen-principal {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* === FLECHAS DEL CARRUSEL === */
+.flecha-carrusel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.3); /* Fondo semi-transparente */
+  color: white;
+  border: none;
+  font-size: 24px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 50%; /* Botón redondo */
+  user-select: none;
+  transition: 0.3s;
+  z-index: 10; /* Encima de la imagen */
+  
+  /* Centrar el icono */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+}
+
+.flecha-carrusel:hover {
+  background-color: rgba(0, 0, 0, 0.7); /* Más oscuro al pasar el mouse */
+}
+
+.flecha-carrusel.prev {
+  left: 10px; /* Pegado a la izquierda */
+}
+
+.flecha-carrusel.next {
+  right: 10px; /* Pegado a la derecha */
+}
+
+
+/* --- MINIATURAS --- */
+.galeria-thumbnails {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.thumbnail:hover {
+  opacity: 1;
+  border-color: #bbb;
+}
+
+.thumbnail.activa {
+  opacity: 1;
+  border-color: #007bff;
+  transform: scale(1.05);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* DESCRIPCIÓN */
+.detalle-descripcion h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.lista-descripcion {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.texto-vacio {
+  font-style: italic;
+  color: #777;
+}
+
+/* ================= SECCIÓN INFO EXTRA ================= */
+.detalle-info-extra {
+  margin-top: 50px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.info-bloque {
+  padding: 25px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center; 
+  min-height: 160px;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.info-bloque h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A3F7A;
+}
+
+.precio {
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 10px;
+  color: #333366;
+}
+
+.info-bloque .badge-stock {
+  margin-top: 15px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.stock-rojo { background: #ffe0e0; color: #c00000; }
+.stock-amarillo { background: #fff6cc; color: #a68b00; }
+.stock-azul { background: #d9e7ff; color: #0047b3; }
+.stock-verde { background: #d8f8d8; color: #176c2a; }
+
+/* ================= BOTONES ================= */
+.detalle-botones {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+.btn-editar {
+  background: #f0ad4e;
+  padding: 16px 50px;
+  font-size: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  border: none;
+  color: #fff;
+}
+
+.btn-eliminar {
+  background: #d9534f;
+  padding: 16px 50px;
+  font-size: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  border: none;
+}
+
+.volver-container {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn-volver {
+  padding: 12px 30px;
+  font-size: 18px;
+  background: #333;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-volver:hover {
+  background-color: #555;
+}
