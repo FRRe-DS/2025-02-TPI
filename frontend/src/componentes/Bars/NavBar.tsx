@@ -3,10 +3,9 @@ import  { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaBell, FaChevronDown, FaUserCircle } from "react-icons/fa";
-import {LogoutButton} from "../LogoutButton";
 import  DropDown from "./DropDown";
 import ProductosDropdown from "./ProductosDropDown";  
-import ReservasDropDown from "./ReservasDropDown";
+
 
 
 export default function Navbar() {
@@ -38,7 +37,9 @@ export default function Navbar() {
           <Link href="/categorias" className="hover:underline">
             Categorías
           </Link>
-          <ReservasDropDown/ >
+          <Link href="/reservas" className="hover:underline">
+            Reservas
+          </Link>
          
         </div>
         

@@ -1,29 +1,25 @@
-'use client';
-
+"use client";
+//los nuevos cambios implementados es para que al recargar la pagina no te saque de sesion automaticamente, solo eso :)
 import React, {
   useState,
   useEffect,
   createContext,
   useContext,
-  ReactNode,
-} from 'react';
-
+  ReactNode
+} from "react";
 import keycloak from "../lib/keycloak";
-
-let keycloakHasBeenInitialized = false;  // ⭐ evita doble init
 
 interface IKeycloakContext {
   authenticated: boolean;
   loading: boolean;
-  login: () => void;
-  logout: () => void;
+  keycloak?: any;
 }
+
+let keycloakHasBeenInitialized = false;
 
 const KeycloakContext = createContext<IKeycloakContext>({
   authenticated: false,
-  loading: true,
-  login: () => {},
-  logout: () => {},
+  loading: true
 });
 
 export const useAuth = () => useContext(KeycloakContext);
@@ -33,46 +29,71 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!keycloak) return;
+    if (!keycloak) {
+      setLoading(false);
+      return;
+    }
 
-    // ⭐ Evitar doble inicialización
+    if (typeof window === "undefined") {
+      setLoading(false);
+      return;
+    }
+
+    // 🟣 Detectar si se viene de un logout real
+    const isLogoutFlow = sessionStorage.getItem("kc_logout") === "true";
+
+    // 🟣 Restaurar tokens SOLO si NO venimos de un logout
+    const storedToken = !isLogoutFlow ? localStorage.getItem("kc_token") : null;
+    const storedRefresh = !isLogoutFlow ? localStorage.getItem("kc_refresh") : null;
+    const storedId = !isLogoutFlow ? localStorage.getItem("kc_id") : null;
+
     if (!keycloakHasBeenInitialized) {
       keycloakHasBeenInitialized = true;
 
-      keycloak
-        .init({
+      keycloak.init({
           onLoad: "check-sso",
           checkLoginIframe: false,
+
+          // Tokens solo si NO venimos de un logout
+          token: isLogoutFlow ? undefined : storedToken || undefined,
+          refreshToken: isLogoutFlow ? undefined : storedRefresh || undefined,
+          idToken: isLogoutFlow ? undefined : storedId || undefined,
         })
         .then((auth) => {
-          setAuthenticated(auth);
+          const isAuth = auth || !!storedToken;
 
-          if (auth) {
-            localStorage.setItem("kc_token", keycloak!.token || "");
-            localStorage.setItem("kc_refresh", keycloak!.refreshToken || "");
-            localStorage.setItem("kc_id", keycloak!.idToken || "");
+          // Evitar restauración incorrecta después de logout
+          if (isLogoutFlow) {
+            setAuthenticated(false);
+            sessionStorage.removeItem("kc_logout");
+            return;
+          }
+
+          setAuthenticated(isAuth);
+
+          if (isAuth) {
+            localStorage.setItem("kc_token", keycloak!.token || storedToken || "");
+            localStorage.setItem(
+              "kc_refresh",
+              keycloak!.refreshToken || storedRefresh || ""
+            );
+            localStorage.setItem("kc_id", keycloak!.idToken || storedId || "");
           }
         })
-        .finally(() => setLoading(false));
+        .finally(() => {
+          setLoading(false);
+        });
     } else {
-      // Ya está inicializado → solo usar estado existente
-      setAuthenticated(keycloak.authenticated ?? false);
+      // Ya estaba inicializado → tomar el valor previo
+      const isAuth = keycloak.authenticated || !!storedToken;
+      setAuthenticated(isAuth);
       setLoading(false);
     }
   }, []);
 
-  const login = () => keycloak!.login();
-
-  const logout = () => {
-    localStorage.removeItem("kc_token");
-    localStorage.removeItem("kc_refresh");
-    localStorage.removeItem("kc_id");
-    keycloak!.logout({ redirectUri: window.location.origin });
-  };
-
   return (
     <KeycloakContext.Provider
-      value={{ authenticated, loading, login, logout }}
+      value={{ authenticated, loading, keycloak }}
     >
       {children}
     </KeycloakContext.Provider>

@@ -62,6 +62,15 @@ export default function Page() {
         keycloak.idToken = data.id_token
         keycloak.authenticated = true
       }
+
+      // Guardar también en localStorage para que sobrevivan a un refresh, eso es necesario para el refresh de la pagina, pa ra que no cierre sesion
+      if (typeof window !== "undefined") {
+        localStorage.setItem("kc_token", data.access_token || "");
+        localStorage.setItem("kc_refresh", data.refresh_token || "");
+        if (data.id_token) {
+          localStorage.setItem("kc_id", data.id_token);
+        }
+      }
       
       // Redirigir al dashboard
       router.push('/dashboard')
@@ -102,7 +111,7 @@ export default function Page() {
             className="mx-auto mb-6 drop-shadow-2xl"
           />
           <h1 className="text-5xl font-bold text-white mb-3">TESTI</h1>
-          <p className="text-xl text-white/90 font-light">E-Commerce Shop</p>
+          {/*<p className="text-xl text-white/90 font-light">E-Commerce Shop</p>*/}
         </div>
       </div>
 

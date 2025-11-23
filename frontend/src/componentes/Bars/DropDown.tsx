@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaUserCircle } from "react-icons/fa";
-import {LogoutButton} from "../LogoutButton"; 
+import {LogoutButton} from "../Bars/LogoutButton"; 
 export default function AccountDropdown() {
   const [open, setOpen] = useState(false);
 
