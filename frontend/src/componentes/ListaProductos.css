@@ -26,21 +26,47 @@
 }
 
 /* === ESTILO RECTANGULAR PARA LOS INPUTS === */
-/* Reemplaza el estilo redondeado anterior por este más definido */
 .input-rectangulo {
   min-width: 160px;
-  height: 38px; /* Un poco más de altura */
+  height: 38px;
   padding: 0 12px;
-  border-radius: 4px; /* Apenas redondeado (casi cuadrado) */
-  border: 1px solid #888; /* Borde más oscuro para que se note el rectángulo */
+  border-radius: 4px; /* Apenas redondeado */
+  border: 1px solid #888;
   box-sizing: border-box;
   font-size: 14px;
 }
 
 .input-rectangulo:focus {
   outline: none;
-  border: 2px solid #333; /* Borde grueso al seleccionar */
+  border: 2px solid #333;
 }
+
+/* === FORMULARIO ID (Alineación y "No Flechas") === */
+.form-id {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 10px;
+  padding-right: 10px;
+  border-right: 1px solid #ccc;
+}
+
+.input-id {
+  width: 80px !important;
+  min-width: 80px !important;
+  text-align: center;
+  
+  /* TRUCO: Ocultar flechas en Firefox */
+  -moz-appearance: textfield;
+}
+
+/* TRUCO: Ocultar flechas en Chrome, Safari, Edge, Opera */
+.input-id::-webkit-outer-spin-button,
+.input-id::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 /* === BOTONES DE ICONO (LUPA Y X) === */
 .btn-icon {
@@ -50,10 +76,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 4px; /* Igual que los inputs */
-  border: 1px solid #888; /* Borde gris sólido */
-  background: white; /* Fondo blanco (ya no negro) */
-  color: #333; /* Icono oscuro */
+  border-radius: 4px;
+  border: 1px solid #888;
+  background: white;
+  color: #333;
   cursor: pointer;
   transition: 0.2s ease-in-out;
 }
@@ -70,24 +96,8 @@
   border-color: #cc0000;
 }
 
-/* Formulario ID (Alineación) */
-.form-id {
-  display: flex;
-  gap: 6px;
-  margin-right: 10px;
-  padding-right: 10px;
-  border-right: 1px solid #ccc; /* Pequeña separación */
-}
-
-.input-id {
-  width: 80px !important;
-  min-width: 80px !important;
-  text-align: center;
-}
-
-
 /* ===========================================
-   TABLA DASHBOARD (TU DISEÑO ORIGINAL)
+   TABLA DASHBOARD (ORIGINAL)
 =========================================== */
 
 .tabla-container,
