@@ -43,7 +43,7 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
         <div className="max-w-5xl mx-auto">
             <Breadcrumb 
                     items={[
-                        { label: 'Productos', href: '/producto/lista' }, 
+                        { label: 'Ver Productos', href: '/producto/lista' }, 
                         { label: producto.nombre || 'Detalle',href: `/producto/detalle/${id}` },
                         { label: 'Editar Producto' } 
                     ]}

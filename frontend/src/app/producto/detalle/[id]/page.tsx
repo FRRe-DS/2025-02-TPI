@@ -113,7 +113,7 @@ export default function DetalleProductoPage({
       {/* 2. AQUÍ INCRUSTAMOS EL BREADCRUMB (Antes del título) */}
       <Breadcrumb 
         items={[
-            { label: 'Productos', href: '/producto/lista' }, 
+            { label: 'Ver Productos', href: '/producto/lista' }, 
             { label: producto.nombre || 'Detalle' } 
         ]}
       />

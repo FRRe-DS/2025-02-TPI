@@ -18,7 +18,7 @@ export default function AgregarProductoPage() {
             <div className="max-w-4xl mx-auto">
                 <Breadcrumb 
                     items={[
-                        { label: 'Productos', href: '/producto/lista' },
+                        { label: 'Ver Productos', href: '/producto/lista' },
                         { label: 'Agregar Producto'},
                     ]}
                 />        
