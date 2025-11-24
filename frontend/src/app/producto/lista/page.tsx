@@ -11,7 +11,7 @@ export default function PaginaListaProductos() {
       <div className="max-w-7xl mx-auto">
               <Breadcrumb 
                 items={[
-                    { label: 'Ver de Productos', href: '/producto/lista' }, 
+                    { label: 'Ver Productos', href: '/producto/lista' }, 
                 ]}
               />
         {/* Encabezado de la sección */}
