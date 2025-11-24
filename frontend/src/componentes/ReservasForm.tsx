@@ -76,19 +76,27 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
         setProductoSeleccionado(prod);
         setBusqueda(`${prod.id} - ${prod.nombre}`);
         setSugerencias([]);
+        setCantidadInput(1); // Reiniciar cantidad al seleccionar nuevo producto
     };
 
     const agregarItem = () => {
         if (!productoSeleccionado) return;
+        
+        // Validar Stock una vez más antes de agregar
+        if (cantidadInput > productoSeleccionado.stockDisponible) {
+            alert(`No hay suficiente stock. Máximo disponible: ${productoSeleccionado.stockDisponible}`);
+            return;
+        }
+
         if (items.some(i => i.idProducto === productoSeleccionado.id)) {
-        alert("Este producto ya está en la lista.");
-        return;
+            alert("Este producto ya está en la lista.");
+            return;
         }
         setItems([...items, {
-        idProducto: productoSeleccionado.id,
-        nombre: productoSeleccionado.nombre,
-        precio: productoSeleccionado.precio,
-        cantidad: cantidadInput
+            idProducto: productoSeleccionado.id,
+            nombre: productoSeleccionado.nombre,
+            precio: productoSeleccionado.precio,
+            cantidad: cantidadInput
         }]);
         setProductoSeleccionado(null);
         setBusqueda('');
@@ -128,7 +136,6 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
 
     const handleBtnCancelar = (e: React.MouseEvent) => {
         e.preventDefault(); 
-        console.log("Cancelando formulario...");
         onCancelar();
     };
 
@@ -150,7 +157,7 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
         {/* Buscador */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <h4 className="font-semibold text-gray-800 mb-4">Agregar Productos</h4>
-            <div className="flex flex-col md:flex-row gap-3 items-end">
+            <div className="flex flex-col md:flex-row gap-3 items-start md:items-end">
             
             <div className="flex-1 relative w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Buscar (ID o Nombre)</label>
@@ -181,7 +188,9 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
                         className="p-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 flex justify-between"
                     >
                         <span className="font-medium text-blue-900">#{prod.id} - {prod.nombre}</span>
-                        <span className="text-gray-500 text-sm">Stock: {prod.stockDisponible}</span>
+                        <span className={`text-sm ${prod.stockDisponible === 0 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                            Stock: {prod.stockDisponible}
+                        </span>
                     </li>
                     ))}
                 </ul>
@@ -189,26 +198,59 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
                 {buscando && <span className="absolute right-2 top-9 text-xs text-gray-400">Buscando...</span>}
             </div>
 
+            {/* Cantidad con Validación de Stock */}
             <div className="w-24">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Cant.</label>
                 <input 
-                type="number" 
-                min="1" 
-                className="input-modern w-full border p-2 rounded"
-                value={cantidadInput}
-                onChange={e => setCantidadInput(Number(e.target.value))}
+                    type="number" 
+                    min="1" 
+                    // ⭐ Límite máximo según stock del producto seleccionado
+                    max={productoSeleccionado ? productoSeleccionado.stockDisponible : undefined}
+                    className="input-modern w-full border p-2 rounded"
+                    value={cantidadInput}
+                    onChange={e => {
+                        const valor = parseInt(e.target.value);
+                        if(isNaN(valor)) {
+                            setCantidadInput(1);
+                            return;
+                        }
+                        
+                        // Lógica de bloqueo: si supera el stock, ponemos el máximo posible
+                        if (productoSeleccionado && valor > productoSeleccionado.stockDisponible) {
+                            setCantidadInput(productoSeleccionado.stockDisponible);
+                        } else if (valor < 1) {
+                            setCantidadInput(1);
+                        } else {
+                            setCantidadInput(valor);
+                        }
+                    }}
+                    disabled={!productoSeleccionado || productoSeleccionado.stockDisponible === 0}
                 />
             </div>
 
             <button 
                 type="button"
                 onClick={agregarItem}
-                disabled={!productoSeleccionado}
+                // Deshabilitar si no hay producto o si no hay stock
+                disabled={!productoSeleccionado || productoSeleccionado.stockDisponible === 0}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded h-[42px] flex items-center gap-2 shadow-sm hover:shadow transition-all"
             >
                 <FaPlus /> Agregar
             </button>
             </div>
+
+            {/* Mensaje de ayuda sobre el stock */}
+            {productoSeleccionado && (
+                <div className="mt-2 text-sm">
+                    <span className="text-gray-600">Disponible: </span>
+                    <span className={`font-bold ${productoSeleccionado.stockDisponible < 5 ? 'text-red-600' : 'text-green-600'}`}>
+                        {productoSeleccionado.stockDisponible} unidades
+                    </span>
+                    {productoSeleccionado.stockDisponible === 0 && (
+                        <span className="ml-2 text-red-500 font-medium">- Sin Stock -</span>
+                    )}
+                </div>
+            )}
         </div>
 
         {/* Tabla de Items */}
