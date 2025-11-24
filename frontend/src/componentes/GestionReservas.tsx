@@ -32,7 +32,6 @@ export default function GestionReservas() {
   const [isLastPage, setIsLastPage] = useState(false);
   const [filtroEstado, setFiltroEstado] = useState(''); 
   
-  // 1. NUEVO ESTADO: Texto de búsqueda
   const [filtroTexto, setFiltroTexto] = useState('');
 
   const cargarReservas = () => {
@@ -94,7 +93,7 @@ export default function GestionReservas() {
     }
   };
 
-  // 2. FILTRADO LOCAL DE LA LISTA
+  // FILTRADO LOCAL DE LA LISTA
   // Filtramos 'reservas' basándonos en lo que escribió el usuario
   const reservasFiltradas = reservas.filter(res => {
     const texto = filtroTexto.toLowerCase();
@@ -144,7 +143,7 @@ export default function GestionReservas() {
           ))}
         </div>
 
-        {/* 3. CAMPO DE BÚSQUEDA */}
+        {/* CAMPO DE BÚSQUEDA */}
         <div className="relative w-full md:w-64 mb-2">
           <input 
             type="text" 

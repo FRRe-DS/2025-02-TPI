@@ -41,13 +41,13 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
     const [cantidadInput, setCantidadInput] = useState(1);
     const [buscando, setBuscando] = useState(false);
 
-    // 1. Generar ID automático
+    //  Generar ID automático
     useEffect(() => {
         const randomCode = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
         setIdCompra(`RES-${randomCode}`);
     }, []);
 
-    // 2. Lógica del Buscador
+    // Lógica del Buscador
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
         if (busqueda.length > 0 && !productoSeleccionado) {
@@ -126,7 +126,6 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
         }
     };
 
-  // Manejador explícito del botón cancelar
     const handleBtnCancelar = (e: React.MouseEvent) => {
         e.preventDefault(); 
         console.log("Cancelando formulario...");
@@ -255,7 +254,7 @@ export default function ReservaForm({ onReservaCreada, onCancelar }: Props) {
         {/* BOTONES FINALES */}
         <div className="flex justify-end pt-4 gap-4">
             
-            {/* Botón de Cancelar (Estilo Mejorado) */}
+            {/* Botón de Cancelar */}
             <button
             type="button"
             onClick={handleBtnCancelar}
