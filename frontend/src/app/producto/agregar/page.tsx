@@ -1,23 +1,47 @@
 "use client";
+
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { FaArrowLeft } from 'react-icons/fa';
-import ProductoForm from  '../../../componentes/ProductoForm';
+import { FaArrowLeft } from 'react-icons/fa'; 
+import FormularioProducto from '@/componentes/ProductoForm';
+import Breadcrumb from '@/componentes/Bars/Breadcrumb';
 
-export default function NuevoProductoPage() {
+export default function AgregarProductoPage() {
     const router = useRouter();
-    const handleProductoCreado = () => {
-    router.push('/productos'); // lleva al usuario a la lista de productos después de agregar uno nuevo
+
+    const handleProductoAgregado = () => {
+        router.push('/producto/lista');
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-                <button onClick={() => router.back()} className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors">
-                <FaArrowLeft className="mr-2" />
-                Volver al inicio
+                <Breadcrumb 
+                    items={[
+                        { label: 'Ver Productos', href: '/producto/lista' },
+                        { label: 'Agregar Producto'},
+                    ]}
+                />        
+            {/* Botón Volver */}
+            <div className="mb-6">
+                <button onClick={() => router.back()} className="flex items-center text-gray-600 hover:text-[#232B65] transition-colors font-medium">
+                    <FaArrowLeft className="mr-2" />
+                    Cancelar y Volver
                 </button>
-                <ProductoForm onProductoAgregado={handleProductoCreado} />
+            </div>
+            {/* Contenedor del Formulario */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div className="bg-[#232B65] px-6 py-4 border-b border-gray-200">
+                    <h1 className="text-xl font-bold text-white">Nuevo Ítem de Inventario</h1>
+                    <p className="text-blue-200 text-sm">Completa los detalles para registrar el producto</p>
+                </div>
+                
+                <div className="p-6 sm:p-8">
+                    {/* 4. Pasamos la función de redirección al componente */}
+                    <FormularioProducto onProductoAgregado={handleProductoAgregado} />
+                </div>
+            </div>
+            
             </div>
         </div>
     );

@@ -8,6 +8,7 @@ import FormularioProducto from '../../componentes/ProductoForm';
 import GestionReservas from '../../componentes/GestionReservas';
 import GestionCategorias from '../../componentes/GestionCategorias';
 import { LogoutButton } from '../../componentes/LogoutButton';
+import Breadcrumb from '../../componentes/Bars/Breadcrumb';
 import SlidePanel from '../../componentes/SlidePanel';
 
 export default function DashboardPage() {
@@ -89,20 +90,18 @@ export default function DashboardPage() {
         </div>
       </header>*/}
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <a href="#" className="text-[#686DFF] hover:text-[#351A7A] font-medium text-sm">
-            Inicio
-          </a>
-        </div>
-      </div>
+
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
+        <Breadcrumb 
+          items={[
+            { label: 'Inicio'}, 
+          ]}
+        />
         {/* Título de Bienvenida */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Bienvenido, Admin</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">Bienvenido, administrador :V</h1>
           <p className="text-xl text-gray-600">¿Qué deseas consultar hoy?</p>
         </div>
 
