@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaBell, FaChevronDown, FaUserCircle } from "react-icons/fa";
 import  DropDown from "./DropDown";
 import ProductosDropdown from "./ProductosDropDown";  
+import ReservasDropdown from "./ReservasDropDown"
 
 
 
@@ -37,10 +38,7 @@ export default function Navbar() {
           <Link href="/categorias" className="hover:underline">
             Categorías
           </Link>
-          <Link href="/reservas" className="hover:underline">
-            Reservas
-          </Link>
-         
+           <ReservasDropdown />
         </div>
         
       </div>
