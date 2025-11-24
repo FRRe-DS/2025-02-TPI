@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { obtenerProductoPorId, eliminarProducto } from "@/servicios/api";
 import "./detalleproducto.css";
 import Link from "next/link";
+import Breadcrumb from "@/componentes/Bars/Breadcrumb";
 
 export default function DetalleProductoPage({
   params,
@@ -57,26 +58,21 @@ export default function DetalleProductoPage({
 
   // --- LÓGICA DE FLECHAS (CARRUSEL) ---
   const cambiarImagen = (direccion: "next" | "prev") => {
-    if (listaImagenes.length <= 1) return; // No hace nada si hay una sola foto
+    if (listaImagenes.length <= 1) return;
 
-    // Encontramos el índice actual
-    // Si por error no lo encuentra (-1), asumimos el 0
     const currentIndex = listaImagenes.indexOf(imagenSeleccionada || "") !== -1 
         ? listaImagenes.indexOf(imagenSeleccionada || "")
         : 0;
 
     let newIndex;
     if (direccion === "next") {
-        // Si es la última, vuelve a la 0 (loop)
         newIndex = (currentIndex + 1) % listaImagenes.length;
     } else {
-        // Si es la primera, va a la última
         newIndex = (currentIndex - 1 + listaImagenes.length) % listaImagenes.length;
     }
 
     setImagenSeleccionada(listaImagenes[newIndex]);
   };
-
 
   const handleEliminar = async () => {
     if (!producto) return;
@@ -113,6 +109,15 @@ export default function DetalleProductoPage({
 
   return (
     <div className="detalle-container">
+      
+      {/* 2. AQUÍ INCRUSTAMOS EL BREADCRUMB (Antes del título) */}
+      <Breadcrumb 
+        items={[
+            { label: 'Productos', href: '/producto/lista' }, 
+            { label: producto.nombre || 'Detalle' } 
+        ]}
+      />
+
       <h1 className="titulo">{producto.nombre}</h1>
 
       <div className="detalle-grid">
@@ -120,13 +125,11 @@ export default function DetalleProductoPage({
         {/* === COLUMNA IZQUIERDA: FOTO + GALERÍA === */}
         <div className="columna-galeria">
           
-          {/* 1. FOTO GRANDE CON FLECHAS */}
+          {/* FOTO GRANDE CON FLECHAS */}
           <div className="imagen-principal-container">
-            
-            {/* Botón ANTERIOR (Solo si hay más de 1 foto) */}
             {listaImagenes.length > 1 && (
                 <button className="flecha-carrusel prev" onClick={() => cambiarImagen("prev")}>
-                    &#10094; {/* Código HTML para flecha izquierda */}
+                    &#10094;
                 </button>
             )}
 
@@ -140,15 +143,14 @@ export default function DetalleProductoPage({
               }}
             />
 
-            {/* Botón SIGUIENTE (Solo si hay más de 1 foto) */}
             {listaImagenes.length > 1 && (
                 <button className="flecha-carrusel next" onClick={() => cambiarImagen("next")}>
-                    &#10095; {/* Código HTML para flecha derecha */}
+                    &#10095;
                 </button>
             )}
           </div>
 
-          {/* 2. MINIATURAS (Thumbnails) */}
+          {/* MINIATURAS */}
           {listaImagenes.length > 1 && (
             <div className="galeria-thumbnails">
               {listaImagenes.map((url, index) => (
@@ -174,6 +176,18 @@ export default function DetalleProductoPage({
               <li className="texto-vacio">Sin descripción disponible.</li>
             )}
           </ul>
+          
+          {/* Agregamos las dimensiones aquí también si quieres verlas */}
+          {producto.dimensiones && (
+            <div style={{marginTop: '20px'}}>
+                <h3>Dimensiones</h3>
+                <ul className="lista-descripcion">
+                    <li>Largo: {producto.dimensiones.largoCm} cm</li>
+                    <li>Alto: {producto.dimensiones.altoCm} cm</li>
+                    <li>Ancho: {producto.dimensiones.anchoCm} cm</li>
+                </ul>
+            </div>
+          )}
         </div>
       </div>
 
@@ -221,6 +235,7 @@ export default function DetalleProductoPage({
         </button>
       </div>
 
+      {/* El botón volver de abajo ya es opcional porque tienes el breadcrumb arriba */}
       <div className="volver-container">
         <Link href="/producto/lista">
           <button className="btn-volver">Volver al listado</button>

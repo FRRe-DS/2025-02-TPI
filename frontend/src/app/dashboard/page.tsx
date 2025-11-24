@@ -102,7 +102,7 @@ export default function DashboardPage() {
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
         {/* Título de Bienvenida */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Bienvenido, Admin</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">Bienvenido, administrador :V</h1>
           <p className="text-xl text-gray-600">¿Qué deseas consultar hoy?</p>
         </div>
 

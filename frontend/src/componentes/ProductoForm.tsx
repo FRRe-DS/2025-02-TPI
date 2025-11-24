@@ -1,7 +1,6 @@
 // --- archivo: src/componentes/FormularioProducto.tsx ---
 "use client";
 import React, { useState, useEffect } from 'react';
-// IMPORTANTE: Agregamos actualizarProducto
 import { agregarProducto, actualizarProducto, obtenerCategorias } from '../servicios/api';
 
 // --- INTERFACES ---
@@ -12,7 +11,7 @@ export interface Categoria {
 }
 
 export interface ProductoInput {
-  id?: number; // Opcional para edición
+  id?: number;
   nombre: string;
   descripcion: string;
   precio: number;
@@ -36,7 +35,7 @@ export interface ProductoInput {
 
 interface Props {
   onProductoAgregado: () => void;
-  productoAEditar?: any; // 👇 NUEVA PROP: Recibe el producto entero si vamos a editar
+  productoAEditar?: any;
 }
 
 const estadoInicialFormulario: ProductoInput = {
@@ -56,7 +55,6 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [urlInput, setUrlInput] = useState('');
   
-  // Detectar si es edición
   const esEdicion = !!productoAEditar;
 
   // --- CARGA INICIAL DE CATEGORÍAS ---
@@ -66,19 +64,16 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
       .catch(err => console.error("Error cargando categorías", err));
   }, []);
 
-  // --- CARGA DE DATOS SI ES EDICIÓN ---
+  // --- RELLENAR DATOS SI ES EDICIÓN ---
   useEffect(() => {
     if (productoAEditar) {
-      // Mapeamos los datos que vienen de la API al formato del Formulario
       setFormData({
         id: productoAEditar.id,
         nombre: productoAEditar.nombre || '',
         descripcion: productoAEditar.descripcion || '',
         precio: productoAEditar.precio || 0,
-        // Ojo: La API suele devolver stockDisponible, lo mapeamos a stockInicial para editarlo
         stockInicial: productoAEditar.stockDisponible ?? productoAEditar.stockInicial ?? 0,
         pesoKg: productoAEditar.pesoKg || 0,
-        // Convertimos el array de objetos categorias a array de IDs
         categoriaIds: productoAEditar.categorias ? productoAEditar.categorias.map((c: any) => c.id) : [],
         imagenes: productoAEditar.imagenes || [],
         dimensiones: {
@@ -103,7 +98,7 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
     const { name, value, type } = e.target;
     let valorProcesado: string | number = value;
     
-    // CORRECCIÓN NaN: Si es número y está vacío, usamos 0
+    // CORRECCIÓN NaN
     if (type === 'number') {
        if (value === "") {
          valorProcesado = 0;
@@ -121,7 +116,6 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
 
   const handleNestedChange = (e: React.ChangeEvent<HTMLInputElement>, parent: 'dimensiones' | 'ubicacion') => {
     const { name, value, type } = e.target;
-    // CORRECCIÓN NaN en anidados
     let valorProcesado: string | number = value;
     if (type === 'number') {
        valorProcesado = value === "" ? 0 : parseFloat(value);
@@ -165,18 +159,14 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
     e.preventDefault();
     try {
       if (esEdicion && formData.id) {
-        // MODO EDICIÓN
         await actualizarProducto(formData.id, formData);
         alert('¡Producto actualizado correctamente!');
       } else {
-        // MODO CREACIÓN
         await agregarProducto(formData);
         alert('¡Producto agregado correctamente!');
-        setFormData(estadoInicialFormulario); // Limpiamos solo si agregamos
+        setFormData(estadoInicialFormulario);
       }
-      
-      onProductoAgregado(); // Callback para volver o refrescar
-      
+      onProductoAgregado();
     } catch (error) {
       alert((error as Error).message);
     }
@@ -195,24 +185,18 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* SECCIÓN 1: GENERAL E IMÁGENES */}
+        {/* COLUMNA IZQUIERDA: General e Imágenes */}
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
           <h4 className="font-semibold text-gray-900 text-lg mb-4">Información General</h4>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto</label>
-            <input 
-              className="input-modern w-full border p-2 rounded" 
-              type="text" name="nombre" value={formData.nombre} onChange={handleChange} required 
-            />
+            <input className="input-modern w-full border p-2 rounded" type="text" name="nombre" value={formData.nombre} onChange={handleChange} required />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-            <input 
-              className="input-modern w-full border p-2 rounded" 
-              type="text" name="descripcion" value={formData.descripcion} onChange={handleChange}
-            />
+            <input className="input-modern w-full border p-2 rounded" type="text" name="descripcion" value={formData.descripcion} onChange={handleChange} />
           </div>
 
           <div className="border-t pt-4 mt-4">
@@ -224,9 +208,7 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
                 placeholder="https://ejemplo.com/foto.jpg"
                 onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAgregarImagen(); }}}
               />
-              <button type="button" onClick={handleAgregarImagen} className="bg-gray-200 hover:bg-gray-300 px-4 rounded">
-                +
-              </button>
+              <button type="button" onClick={handleAgregarImagen} className="bg-gray-200 hover:bg-gray-300 px-4 rounded font-bold text-gray-600">+</button>
             </div>
             {formData.imagenes.length > 0 && (
               <div className="grid grid-cols-3 gap-2 mt-2">
@@ -244,7 +226,7 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
             <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Categorías</label>
             <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2">
               {categorias.length > 0 ? categorias.map(cat => (
-                <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
+                <label key={cat.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded">
                   <input
                     type="checkbox"
                     value={cat.id}
@@ -259,8 +241,9 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
           </div>
         </div>
         
-        {/* SECCIÓN 2: INVENTARIO, DIMENSIONES, UBICACIÓN */}
+        {/* COLUMNA DERECHA: Inventario, Dimensiones y Ubicación */}
         <div className="space-y-6">
+            
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
               <h4 className="font-semibold text-gray-900 text-lg mb-4">Inventario y Precio</h4>
               <div>
@@ -279,21 +262,40 @@ export default function FormularioProducto({ onProductoAgregado, productoAEditar
               </div>
             </div>
 
+            {/* SECCIÓN DIMENSIONES MEJORADA CON ETIQUETAS */}
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
               <h4 className="font-semibold text-gray-900 text-lg mb-4">Dimensiones (cm)</h4>
               <div className="grid grid-cols-3 gap-3">
-                  <input className="input-modern w-full border p-2 rounded" type="number" placeholder="Largo" name="largoCm" value={formData.dimensiones.largoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" />
-                  <input className="input-modern w-full border p-2 rounded" type="number" placeholder="Ancho" name="anchoCm" value={formData.dimensiones.anchoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" />
-                  <input className="input-modern w-full border p-2 rounded" type="number" placeholder="Alto" name="altoCm" value={formData.dimensiones.altoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" />
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Largo</label>
+                    <input className="input-modern w-full border p-2 rounded" type="number" name="largoCm" value={formData.dimensiones.largoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Ancho</label>
+                    <input className="input-modern w-full border p-2 rounded" type="number" name="anchoCm" value={formData.dimensiones.anchoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Alto</label>
+                    <input className="input-modern w-full border p-2 rounded" type="number" name="altoCm" value={formData.dimensiones.altoCm} onChange={e => handleNestedChange(e, 'dimensiones')} min="0" />
+                  </div>
               </div>
             </div>
             
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm space-y-4">
                 <h4 className="font-semibold text-gray-900 text-lg mb-4">Ubicación</h4>
-                <input className="input-modern w-full border p-2 rounded mb-2" type="text" name="street" value={formData.ubicacion.street} onChange={e => handleNestedChange(e, 'ubicacion')} placeholder="Calle" />
+                <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">Calle / Dirección</label>
+                   <input className="input-modern w-full border p-2 rounded" type="text" name="street" value={formData.ubicacion.street} onChange={e => handleNestedChange(e, 'ubicacion')} placeholder="Ej: Av. Corrientes 123" />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
-                    <input className="input-modern w-full border p-2 rounded" type="text" name="city" value={formData.ubicacion.city} onChange={e => handleNestedChange(e, 'ubicacion')} placeholder="Ciudad" />
-                    <input className="input-modern w-full border p-2 rounded" type="text" name="country" value={formData.ubicacion.country} onChange={e => handleNestedChange(e, 'ubicacion')} placeholder="País" maxLength={2} />
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
+                        <input className="input-modern w-full border p-2 rounded" type="text" name="city" value={formData.ubicacion.city} onChange={e => handleNestedChange(e, 'ubicacion')} />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">País</label>
+                        <input className="input-modern w-full border p-2 rounded" type="text" name="country" value={formData.ubicacion.country} onChange={e => handleNestedChange(e, 'ubicacion')} maxLength={2} />
+                    </div>
                 </div>
             </div>
         </div>
