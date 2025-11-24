@@ -213,7 +213,9 @@ export default function DetalleProductoPage({
 
       {/* BOTONES */}
       <div className="detalle-botones">
-        <button className="btn-editar">EDITAR PRODUCTO</button>
+        <button className="btn-editar" onClick={() => router.push(`/producto/editar/${producto.id}`)}>
+          EDITAR PRODUCTO
+        </button>
         <button className="btn-eliminar" onClick={handleEliminar}>
           ELIMINAR PRODUCTO
         </button>
