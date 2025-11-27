@@ -1,26 +1,37 @@
 Proyecto TPI DS2025
+
 Integrantes:
+
 Albornoz, María Leonor
+
 Domínguez, Gonzalo Nahuel
+
 Leguizamón, Sofía Violeta
+
 Maldonado, Leandro Arian
+
 Sanchez, Gisela Mariel
+
 Suárez, Gonzalo Nicolás
+
 Tomás, Damián Uriel
+
 Viola Saucedo, Ariel Antonio
+
 -------------------------------------------------------------------------------
 📦 Stock Management – TPI DS2025
+
 Sistema web de gestión de stock para la materia Desarrollo de Software (DS2025).
 Permite administrar productos, categorías, reservas y usuarios mediante una arquitectura moderna basada en Next.js, Node.js, Supabase, Keycloak y Docker.
 
 🚀 Características principales
+
 Gestión completa de productos (alta, baja, modificación y listado)
 Administración de categorías
 Sistema de reservas
 Autenticación y autorización con Keycloak
 API REST centralizada para comunicación con el frontend
 Persistencia de datos con Supabase
-Modo claro / modo oscuro para la UI
 Arquitectura monorepo con workspaces
 Contenedores dockerizados para despliegue rápido
 
@@ -43,66 +54,76 @@ API Gateway (NGINX)
 
 
 🔧 Diagrama conceptual (texto)
+
                  ┌──────────────────┐
-                     Frontend                          
-                    Next.js + TS                   
+                 │     Frontend     │
+                 │ Next.js + TS     │
                  └───────┬──────────┘
                          │
                          ▼
                 ┌──────────────────┐
-                       Backend      
-                 Node.js + Express
+                │     Backend      │
+                │ Node.js + Express│
                 └───────┬──────────┘
                         │
                         ▼
                 ┌──────────────────┐
-                  Supabase DB    
+                │   Supabase DB    │
                 └──────────────────┘
 
                 ┌──────────────────┐
-                   Keycloak      
-                 Auth + Tokens    
+                │    Keycloak      │
+                │ Auth + Tokens    │
                 └──────────────────┘
 
                
 
-
+---------------------------------------------------------------------------------
 📂 Estructura del Proyecto
 TPI-DS2025/
+
 ├── frontend/            → Aplicación web (Next.js + TypeScript)
+
 ├── mi-app-backend/      → API REST (Express + Supabase)
+
 ├── keycloak/            → Configuración del IAM + docker-compose
+
 ├── package.json         → Configuración raíz del monorepo
+
 ├── package-lock.json    → Lockfile único
+
 ├── node_modules/        → Dependencias compartidas
+
 └── .gitignore           → Ignora builds, .env, node_modules, etc.
 
+----------------------------------------------------------------------------
 🧰 Tecnologías utilizadas
-🟦 Frontend
-Next.js 15
-React 19
-TypeScript
-TailwindCSS
-CSS Modules
-Flowbite
-React Icons
-Lucide React
+
+🟦 Frontend:
+Next.js 15, 
+React 19, 
+TypeScript, 
+TailwindCSS,
+CSS Modules, 
+Flowbite, 
+React Icons, 
+Lucide React, 
 Keycloak-js
 
-🟩 Backend
-Node.js
-Express 5
-Supabase-js
-Keycloak-connect
-dotenv
-axios
+🟩 Backend:
+Node.js, 
+Express 5, 
+Supabase-js, 
+Keycloak-connect, 
+dotenv, 
+axios, 
 cors
 
-🔐 Autenticación
+🔐 Autenticación: 
 Keycloak 24
 
-🐳 Infraestructura
-Docker Compose
+🐳 Infraestructura:
+Docker Compose, 
 NGINX (según versión del gateway)
 
 
@@ -116,12 +137,15 @@ git pull
 npm install
 
 2️⃣ Inicializar el submódulo (carpeta de la materia)
-git pull
-git submodule update --init
+```
+git clone --recurse-submodules <URL-del-repo>
+```
 
 3️⃣ Levantar Keycloak
 Ir a la carpeta keycloak/ y ejecutar:
+```
 docker compose up -d
+```
 Acceder a la consola:
 👉 http://localhost:8080
 Usuario: admin
@@ -132,15 +156,22 @@ Realm: ds-2025-realm
 Crear archivo (dentro de la carpeta frontend):
 📄 frontend/.env.local
 Contenido:
+``` bash
 NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
+
 NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8080
+
 NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
+
 NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
+```
+
 
 5️⃣ Levantar el proyecto completo (frontend + backend)
 En la raíz del proyecto:
+```bash
 npm run dev:all
-
+```
 Esto inicia:
 Frontend en: http://localhost:3000
 Backend en: http://localhost:4000
@@ -191,5 +222,4 @@ Figma – Diseño UI del frontend
 🧑‍💻 Distribución del trabajo
 Tareas divididas por componentes del front/back
 Integración continua manual mediante reuniones semanales
-Control de versiones con Git, utilizando el submódulo general de las API.
-
+Control de versiones con Git, utilizando el submódulo general de las API. 
