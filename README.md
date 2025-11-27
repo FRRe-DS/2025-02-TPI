@@ -211,13 +211,14 @@ dotenv 17.2.3
 👥 Equipo y prácticas ágiles
 Metodología: Ágil / Scrum - Kanban
 Herramientas utilizadas:
+
 📝 Gestión y tableros
 Trello / Google Docs
- Tablero Kanban del equipo:
- https://docs.google.com/document/d/1f1oeuP4RXywkhwPlYSKjNfVSU4Ly2chn2OwBtA23cw0/edit?usp=sharing
-🎨 Prototipado y diseño
-Figma – Diseño UI del frontend
- https://www.figma.com/design/VgBFt9bSCxjyVA94YMb8OP/Stock-Management?node-id=0-1&t=tHYfkeY7nC4FMSbH-1
+[Tablero Kanban del equipo](https://docs.google.com/document/d/1f1oeuP4RXywkhwPlYSKjNfVSU4Ly2chn2OwBtA23cw0/edit?usp=sharing)
+ 
+🎨 Prototipado y diseño[
+Figma – Diseño UI del frontend](https://www.figma.com/design/VgBFt9bSCxjyVA94YMb8OP/Stock-Management?node-id=0-1&t=tHYfkeY7nC4FMSbH-1)
+ 
  
 🧑‍💻 Distribución del trabajo
 Tareas divididas por componentes del front/back
