@@ -15,6 +15,7 @@ export default function Page() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  
 
   useEffect(() => {
     if (authenticated) {
@@ -104,14 +105,14 @@ export default function Page() {
         
         <div className="relative z-10 text-center">
           <Image
-            src="/testicat.png"
+            src="/logo.png"
             alt="TESTI Logo"
             width={200}
             height={200}
             className="mx-auto mb-6 drop-shadow-2xl"
           />
           <h1 className="text-5xl font-bold text-white mb-3">TESTI</h1>
-          {/*<p className="text-xl text-white/90 font-light">E-Commerce Shop</p>*/}
+          <p className="text-xl text-white/90 font-light">E-Commerce Shop</p>
         </div>
       </div>
 
@@ -131,13 +132,11 @@ export default function Page() {
             <h1 className="text-3xl font-bold text-[#1A3F7A]">TESTI</h1>
           </div>
 
-          {/* Link de crear cuenta */}
-          <div className="text-right mb-6">
-            <span className="text-sm text-gray-600">¿No sos usuario? </span>
-            <a href="#" className="text-sm text-[#686DFF] hover:text-[#351A7A] font-medium">
-              CREA UNA CUENTA
-            </a>
-          </div>
+          {/* Link de crear cuenta */} 
+          <div className="text-right mb-6"> 
+            <span className="text-sm text-gray-600">¿No sos usuario? </span> 
+            <a href="#" className="text-sm text-[#686DFF] hover:text-[#351A7A] font-medium"> CREA UNA CUENTA </a> 
+          </div> 
 
           {/* Card de Login */}
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
@@ -260,7 +259,7 @@ export default function Page() {
 
             {/* Copyright */}
             <div className="text-center text-xs text-gray-500 space-y-1">
-              <p>TallerIntegral 2025 - FRRe-UTN-FRSF todos los derechos reservados</p>
+              <p>Diseño de sistemas - UTN-FRRe todos los derechos reservados</p>
               <p>© 2025 Todos los Derechos Reservados</p>
             </div>
           </footer>
