@@ -49,7 +49,7 @@ export default function ProductsReservationsDropdown() {
           <div className="px-2 py-1 text-xs opacity-70">Reservas</div>
 
           <Link
-            href="/reservas"
+            href="/reservas/Ver"
             className="flex items-center gap-2 p-2 rounded hover:bg-white/10 transition"
           >
             <FaClipboardList />
@@ -57,7 +57,7 @@ export default function ProductsReservationsDropdown() {
           </Link>
 
           <Link
-            href="/reservas/agregar"
+            href="/reservas/Agregar"
             className="flex items-center gap-2 p-2 rounded hover:bg-white/10 transition"
           >
             <FaPlus />

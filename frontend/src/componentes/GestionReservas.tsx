@@ -1,28 +1,17 @@
-// --- archivo: src/componentes/GestionReservas.tsx ---
 "use client";
 import React, { useState, useEffect } from 'react';
-// Importamos las funciones de la API
+import { useRouter } from 'next/navigation'; 
+import { FaPlus, FaCheckCircle, FaTimesCircle, FaClock, FaBoxOpen, FaSearch } from 'react-icons/fa'; 
 import { 
   obtenerReservas, 
-  crearReserva, 
-  cancelarReserva,
-  actualizarReserva
+  cancelarReserva, 
+  actualizarReserva 
 } from '../servicios/api';
 
-// --- INTERFACES (basadas en tu openapi.yaml) ---
+const USUARIO_ID_PRUEBA = 1;
+const LIMIT_RESERVAS_POR_PAGINA = 4; 
 
-export interface ReservaProductoInput {
-  idProducto: number;
-  cantidad: number;
-}
-
-export interface ReservaInput {
-  idCompra: string;
-  usuarioId: number;
-  productos: ReservaProductoInput[];
-}
-
-export interface ReservaCompleta {
+interface ReservaCompleta {
   idReserva: number;
   idCompra: string;
   usuarioId: number;
@@ -33,34 +22,20 @@ export interface ReservaCompleta {
     cantidad: number;
   }[];
 }
-// --- Fin de Interfaces ---
-
-// --- Constantes de Configuración ---
-
-// Hardcodeamos un ID de usuario para probar
-// (En el mundo real, vendría de la autenticación)
-const USUARIO_ID_PRUEBA = 1;
-const LIMIT_RESERVAS_POR_PAGINA = 5; // Límite para la paginación
 
 export default function GestionReservas() {
+  const router = useRouter(); 
   const [reservas, setReservas] = useState<ReservaCompleta[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  // --- Estados para el formulario de NUEVA RESERVA ---
-  const [idCompra, setIdCompra] = useState('');
-  const [prodId, setProdId] = useState(''); // ID del producto a reservar
-  const [prodCant, setProdCant] = useState(1); // Cantidad a reservar
-
-  // --- ESTADOS DE FILTRO Y PAGINACIÓN ---
   const [currentPage, setCurrentPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState(false);
-  const [filtroEstado, setFiltroEstado] = useState(''); // '' = Todas
+  const [filtroEstado, setFiltroEstado] = useState(''); 
+  
+  const [filtroTexto, setFiltroTexto] = useState('');
 
-  // 2. Función para cargar las reservas
   const cargarReservas = () => {
     setCargando(true);
-    
-    // Prepara el objeto de filtros para la API
     const filtrosParaApi = {
       usuarioId: USUARIO_ID_PRUEBA,
       estado: filtroEstado,
@@ -68,270 +43,221 @@ export default function GestionReservas() {
       limit: LIMIT_RESERVAS_POR_PAGINA
     };
 
-    obtenerReservas(filtrosParaApi) // Pasa el objeto de filtros
-      .then((res: ReservaCompleta[]) => {
-        setReservas(res || []);
-        // Verifica si es la última página
+    obtenerReservas(filtrosParaApi)
+      .then((res: any) => {
+        setReservas((res as ReservaCompleta[]) || []);
         setIsLastPage((res || []).length < LIMIT_RESERVAS_POR_PAGINA);
       })
-      .catch(error => {
-        console.error("Error al cargar reservas:", error);
+      .catch((error: any) => {
+        console.error("Error:", error);
         setReservas([]);
       })
-      .finally(() => {
-        setCargando(false);
-      });
+      .finally(() => setCargando(false));
   };
 
-  // 3. Carga inicial y recarga
-  // Se ejecuta si 'currentPage' o 'filtroEstado' cambian
   useEffect(() => {
     cargarReservas();
   }, [currentPage, filtroEstado]);
 
-  // 4. Manejador para crear una reserva
-  const handleCrearReserva = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const nuevaReserva: ReservaInput = {
-      idCompra: idCompra,
-      usuarioId: USUARIO_ID_PRUEBA,
-      productos: [
-        {
-          idProducto: Number(prodId),
-          cantidad: Number(prodCant)
-        }
-      ]
-    };
-
-    try {
-      await crearReserva(nuevaReserva);
-      alert('¡Reserva creada! (El stock ha sido descontado)');
-      // Limpiamos el formulario
-      setIdCompra('');
-      setProdId('');
-      setProdCant(1);
-      
-      // Vuelve a la página 1 y recarga
-      setCurrentPage(1); 
-      // Si ya estábamos en la página 1, el useEffect no se dispara,
-      // así que forzamos la recarga (solo si ya estábamos en la pág 1)
-      if (currentPage === 1) {
-         cargarReservas();
-      }
-    } catch (error) {
-      alert((error as Error).message); // (Mostrará "Stock insuficiente" si falla)
-    }
-  };
-  
-  // 5. Manejador para cancelar una reserva
   const handleCancelarReserva = async (reservaId: number) => {
-    const motivo = window.prompt("Por favor, ingresa el motivo de la cancelación:");
-    
-    // Si el usuario cancela el prompt o no escribe nada
-    if (!motivo) {
-      alert("La cancelación fue abortada.");
-      return;
-    }
-
+    const motivo = window.prompt("Motivo de la cancelación:");
+    if (!motivo) return;
     try {
       await cancelarReserva(reservaId, motivo);
-      alert('¡Reserva cancelada! (El stock ha sido liberado)');
-      
-      // Recarga la lista actual para reflejar el cambio
+      alert('¡Reserva cancelada!');
       cargarReservas();
-      
     } catch (error) {
       alert((error as Error).message);
     }
   };
 
-  // 6. Manejador para confirmar una reserva
   const handleConfirmarReserva = async (reservaId: number) => {
-    if (!window.confirm("¿Seguro que quieres confirmar esta reserva?")) {
-      return;
-    }
+    if (!window.confirm("¿Confirmar reserva?")) return;
     try {
-      // Llamamos a la API con el ID del usuario (para la verificación) y el nuevo estado
-      const reservaActualizada = await actualizarReserva(
-        reservaId, 
-        USUARIO_ID_PRUEBA, // El 'usuarioId' es requerido por el backend
-        'confirmado'       // El nuevo estado
-      );
-      
+      await actualizarReserva(reservaId, USUARIO_ID_PRUEBA, 'confirmado');
       alert('¡Reserva confirmada!');
-      
-      // Actualizamos la lista local con la reserva actualizada
-      setReservas(reservasActuales => 
-        reservasActuales.map(res => 
-          res.idReserva === reservaId ? reservaActualizada : res
-        )
-      );
-      
+      cargarReservas();
     } catch (error) {
       alert((error as Error).message);
     }
   };
 
-  // 7. Manejadores de Filtro y Paginación
-  const handleFiltroEstadoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFiltroEstado(e.target.value);
-    setCurrentPage(1); // Resetea a la página 1
-  };
-  
-  const handlePaginaSiguiente = () => {
-    if (!isLastPage) {
-      setCurrentPage(p => p + 1);
+  const getEstadoBadge = (estado: string) => {
+    switch (estado) {
+      case 'confirmado':
+        return <span className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase shadow-sm"><FaCheckCircle /> Confirmado</span>;
+      case 'cancelado':
+        return <span className="flex items-center gap-1 bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-bold uppercase shadow-sm"><FaTimesCircle /> Cancelado</span>;
+      default:
+        return <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold uppercase shadow-sm"><FaClock /> Pendiente</span>;
     }
   };
-  
-  const handlePaginaAnterior = () => {
-    setCurrentPage(p => Math.max(1, p - 1));
-  };
 
+  // FILTRADO LOCAL DE LA LISTA
+  // Filtramos 'reservas' basándonos en lo que escribió el usuario
+  const reservasFiltradas = reservas.filter(res => {
+    const texto = filtroTexto.toLowerCase();
+    return (
+      res.idReserva.toString().includes(texto) ||           // Por ID numérico (ej: 13)
+      res.idCompra.toLowerCase().includes(texto) ||         // Por Código (ej: RES-882)
+      res.productos.some(p => p.nombre.toLowerCase().includes(texto)) // Por nombre de producto
+    );
+  });
 
   return (
-    <div>
-      {/* --- Formulario para crear reserva --- */}
-      <h3 className="text-lg font-bold text-gray-800 mb-4">Crear Nueva Reserva</h3>
-      <form onSubmit={handleCrearReserva} className="mb-6 flex flex-col sm:flex-row gap-2">
-        <input
-          type="text"
-          placeholder="ID de Compra (ej. COMPRA-001)"
-          value={idCompra}
-          onChange={e => setIdCompra(e.target.value)}
-          required
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-        <input
-          type="number"
-          placeholder="ID Producto"
-          value={prodId}
-          onChange={e => setProdId(e.target.value)}
-          required
-          className="w-full sm:w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-        <input
-          type="number"
-          placeholder="Cantidad"
-          value={prodCant}
-          onChange={e => setProdCant(Number(e.target.value))}
-          required
-          min="1"
-          className="w-full sm:w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      
+      {/* CABECERA */}
+      <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
+        <div>
+            <h2 className="text-2xl font-bold text-[#232B65]">Mis Reservas</h2>
+            <p className="text-sm text-gray-500">Historial y gestión de solicitudes de stock</p>
+        </div>
+        
         <button
-          type="submit"
-          className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200"
+          onClick={() => router.push('/reservas/Agregar')}
+          className="flex items-center gap-2 bg-[#232B65] hover:bg-[#1A2150] text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg active:scale-95"
         >
-          Crear Reserva
+          <FaPlus className="text-sm" />
+          Nueva Reserva
         </button>
-      </form>
-
-      {/* --- Filtro por Estado --- */}
-      <div className="mb-4 flex items-center gap-3">
-        <label htmlFor="filtro-estado" className="font-bold text-gray-700">
-          Filtrar por estado:
-        </label>
-        <select
-          id="filtro-estado"
-          value={filtroEstado}
-          onChange={handleFiltroEstadoChange}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Todas</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="confirmado">Confirmado</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
       </div>
 
-      {/* --- Lista de reservas existentes --- */}
-      <h3 className="text-lg font-bold text-gray-800 mb-4 mt-6">Reservas Existentes</h3>
-      {cargando ? <p className="text-gray-600">Cargando reservas...</p> : (
-        reservas.length > 0 ? (
-          reservas.map(res => (
-            <div key={res.idReserva} className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <div className="flex-1">
-                  <p className="font-bold text-gray-800 mb-1">
-                    Reserva ID: {res.idReserva} <span className="font-normal text-gray-600">(Compra: {res.idCompra})</span>
-                  </p>
-                  <p className="mb-2">
-                    <span className="font-semibold">Estado:</span>{' '}
-                    <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                      res.estado === 'confirmado' ? 'bg-green-100 text-green-800' :
-                      res.estado === 'cancelado' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {res.estado}
-                    </span>
-                  </p>
-                  <p className="font-semibold mb-1">Productos:</p>
-                  <ul className="list-disc list-inside space-y-1 text-gray-700">
-                     {res.productos && res.productos.length > 0 ? (
-                      res.productos.map(p => (
-                        <li key={`${res.idReserva}-${p.idProducto}`}>
-                          {p.cantidad} x (ID: {p.idProducto}) {p.nombre || ''}
-                        </li>
-                      ))
-                    ) : (
-                      <li className="text-gray-500">(Sin productos detallados)</li>
+      {/* BARRA DE HERRAMIENTAS (Filtros + Buscador) */}
+      <div className="px-6 pt-4 bg-gray-50 border-b border-gray-200 flex flex-col md:flex-row justify-between items-end gap-4">
+        
+        {/* Pestañas de Estado */}
+        <div className="flex gap-2 w-full md:w-auto">
+          {['', 'pendiente', 'confirmado', 'cancelado'].map((estado) => (
+            <button
+              key={estado}
+              onClick={() => { setFiltroEstado(estado); setCurrentPage(1); }}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors border-b-2 ${
+                filtroEstado === estado 
+                  ? 'bg-white text-[#232B65] border-[#232B65] shadow-sm transform translate-y-[1px]' 
+                  : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {estado === '' ? 'Todas' : estado.charAt(0).toUpperCase() + estado.slice(1) + 's'}
+            </button>
+          ))}
+        </div>
+
+        {/* CAMPO DE BÚSQUEDA */}
+        <div className="relative w-full md:w-64 mb-2">
+          <input 
+            type="text" 
+            placeholder="Buscar ID o Producto..." 
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#232B65] focus:border-transparent outline-none"
+            value={filtroTexto}
+            onChange={(e) => setFiltroTexto(e.target.value)}
+          />
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <FaSearch />
+          </div>
+        </div>
+
+      </div>
+
+      {/* LISTA (Usamos reservasFiltradas en lugar de reservas) */}
+      <div className="p-6 bg-gray-50">
+        {cargando ? (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#232B65] mb-3"></div>
+            <p>Cargando reservas...</p>
+          </div>
+        ) : reservasFiltradas.length > 0 ? (
+          <div className="grid gap-4">
+            {reservasFiltradas.map(res => (
+              <div key={res.idReserva} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow duration-200">
+                
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-4 mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-[#232B65] text-xl shadow-inner">
+                      <FaBoxOpen />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-lg font-bold text-gray-900">Reserva #{res.idReserva}</h4>
+                        {getEstadoBadge(res.estado)}
+                      </div>
+                      <p className="text-xs text-gray-500 font-mono mt-1">Cód. Referencia: {res.idCompra}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {res.estado === 'pendiente' && (
+                        <button 
+                          onClick={() => handleConfirmarReserva(res.idReserva)} 
+                          className="text-xs bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 px-3 py-1.5 rounded-lg font-bold transition-colors uppercase tracking-wide"
+                        >
+                            Confirmar
+                        </button>
                     )}
-                  </ul>
+                    {res.estado !== 'cancelado' && (
+                        <button 
+                          onClick={() => handleCancelarReserva(res.idReserva)} 
+                          className="text-xs bg-white text-red-600 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg font-bold transition-colors uppercase tracking-wide"
+                        >
+                            Cancelar
+                        </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* --- Grupo de Botones de Acción --- */}
-                <div className="flex flex-row sm:flex-col gap-2 items-start flex-shrink-0">
-
-                  {/* Botón de Confirmar (solo si está pendiente) */}
-                  {res.estado && res.estado.trim() === 'pendiente' && (
-                    <button
-                      onClick={() => handleConfirmarReserva(res.idReserva)}
-                      className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 w-full sm:w-28"
-                    >
-                      Confirmar
-                    </button>
-                  )}
-
-                  {/* Botón de Cancelar (solo si no está cancelada) */}
-                  {res.estado && res.estado.trim() !== 'cancelado' && (
-                    <button
-                      onClick={() => handleCancelarReserva(res.idReserva)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 w-full sm:w-28"
-                    >
-                      Cancelar
-                    </button>
-                  )}
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Productos Solicitados</p>
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <ul className="space-y-2">
+                      {res.productos?.map((p, idx) => (
+                        <li key={idx} className="text-sm text-gray-700 flex justify-between items-center border-b border-gray-200 last:border-0 pb-1 last:pb-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[#232B65] bg-white px-2 py-0.5 rounded border border-gray-200 text-xs">{p.cantidad}x</span>
+                            <span className="font-medium">{p.nombre}</span>
+                          </div>
+                          <span className="text-gray-400 text-xs font-mono">ID: {p.idProducto}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <p className="text-gray-600 text-center py-8">No se encontraron reservas para este filtro.</p>
-        )
-      )}
-
-      {/* --- Paginación --- */}
-      <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-        <button
-          onClick={handlePaginaAnterior}
-          disabled={currentPage === 1 || cargando}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
-        >
-          Anterior
-        </button>
-        <span className="font-medium text-gray-700">Página: {currentPage}</span>
-        <button
-          onClick={handlePaginaSiguiente}
-          disabled={isLastPage || cargando}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
-        >
-          Siguiente
-        </button>
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400 bg-white rounded-xl border-2 border-dashed border-gray-200">
+            <FaSearch className="text-5xl mb-4 opacity-20" />
+            <p className="text-lg font-medium text-gray-500">No se encontraron reservas</p>
+            <p className="text-sm text-gray-400">Intenta con otro término de búsqueda o estado.</p>
+          </div>
+        )}
       </div>
 
+      {/* PAGINACIÓN */}
+      <div className="p-6 border-t border-gray-200 bg-white">
+        <div className="flex items-center gap-2">
+            <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1 || cargando}
+            className="px-4 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors bg-white"
+            >
+            Anterior
+            </button>
+            
+            <span className="text-sm text-gray-700 font-medium px-2">
+            Página: {currentPage}
+            </span>
+            
+            <button
+            onClick={() => !isLastPage && setCurrentPage(p => p + 1)}
+            disabled={isLastPage || cargando}
+            className="px-4 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors bg-white"
+            >
+            Siguiente
+            </button>
+        </div>
+      </div>
     </div>
   );
 }
