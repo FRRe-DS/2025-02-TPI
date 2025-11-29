@@ -11,9 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001'], 
-  methods: 'GET,POST,PATCH,DELETE,PUT', 
-  allowedHeaders: 'Content-Type,Authorization' // <-- IMPORTANTE: Añadir 'Authorization'
+  origin: '*', // Permitir todos los orígenes
+  methods: 'GET,POST,PATCH,DELETE,PUT,OPTIONS', 
+  allowedHeaders: 'Content-Type,Authorization',
+  credentials: false // Cambiar a false cuando origin es *
 };
 
 // --- Middlewares ---

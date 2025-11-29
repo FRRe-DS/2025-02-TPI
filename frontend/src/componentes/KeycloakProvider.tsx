@@ -51,7 +51,7 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
       keycloakHasBeenInitialized = true;
 
       keycloak.init({
-          onLoad: "check-sso",
+          onLoad: "check-sso", // Verifica SSO sin forzar login
           checkLoginIframe: false,
 
           // Tokens solo si NO venimos de un logout

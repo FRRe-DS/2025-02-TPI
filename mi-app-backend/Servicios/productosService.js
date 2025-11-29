@@ -1,6 +1,7 @@
 
 
-import supabase from '../dbConfig.js'; 
+import supabase from '../dbConfig.js';
+import { validarImagenes, procesarImagenes } from '../utils/imageHelper.js'; 
 
 
 // ===== HELPER DE MAPEO =====
@@ -167,7 +168,18 @@ const crearProducto = async (datosProducto) => {
     dimensiones,pesoKg, ubicacion, imagenes
   } = datosProducto;
 
-  // 2. Insertar en la tabla principal 'productos'
+  // 1. Validar imágenes si se proporcionaron
+  if (imagenes && imagenes.length > 0) {
+    const validacion = validarImagenes(imagenes);
+    if (!validacion.valido) {
+      throw new Error(`Error en imágenes: ${validacion.error}`);
+    }
+  }
+
+  // 2. Procesar imágenes (convertir a CDN si es necesario)
+  const imagenesProcesadas = imagenes ? procesarImagenes(imagenes) : [];
+
+  // 3. Insertar en la tabla principal 'productos'
   const { data: productoData, error: productoError } = await supabase
     .from('productos')
     .insert({
@@ -178,7 +190,7 @@ const crearProducto = async (datosProducto) => {
       dimensiones: dimensiones, 
       peso_kg: pesoKg,
       ubicacion: ubicacion,
-      imagenes: imagenes
+      imagenes: imagenesProcesadas
     })
     .select('id')
     .single();
