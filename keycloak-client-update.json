@@ -1,0 +1,11 @@
+{
+  "webOrigins": ["*"],
+  "redirectUris": [
+    "http://localhost/*",
+    "http://localhost:3000/*",
+    "http://localhost/",
+    "http://localhost:3000/"
+  ],
+  "rootUrl": "http://localhost",
+  "baseUrl": "http://localhost"
+}
