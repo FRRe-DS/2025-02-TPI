@@ -24,60 +24,6 @@ Viola Saucedo, Ariel Antonio
 Sistema web de gestión de stock para la materia Desarrollo de Software (DS2025).
 Permite administrar productos, categorías, reservas y usuarios mediante una arquitectura moderna basada en Next.js, Node.js, Supabase, Keycloak y Docker.
 
-🚀 Características principales
-
-Gestión completa de productos (alta, baja, modificación y listado)
-Administración de categorías
-Sistema de reservas
-Autenticación y autorización con Keycloak
-API REST centralizada para comunicación con el frontend
-Persistencia de datos con Supabase
-Arquitectura monorepo con workspaces
-Contenedores dockerizados para despliegue rápido
-
-🏗️ Arquitectura General del Proyecto
-El proyecto se organiza en un monorepo que contiene:
-Frontend (Next.js 15 + TypeScript)
- UI reactiva, manejo de sesiones con Keycloak, estilos con TailwindCSS.
-
-Backend (Node.js + Express)
- Exposición de endpoints REST, middleware de Keycloak, conexión a Supabase.
-
-Keycloak
- Servicio de Identity & Access Management para autenticación.
-
-Supabase
- Base de datos principal (PostgreSQL administrado).
-
-API Gateway (NGINX)
- (Opcional según versión) Para enrutar tráfico entre frontend y backend.
-
-
-🔧 Diagrama conceptual (texto)
-
-                 ┌──────────────────┐
-                 │     Frontend     │
-                 │ Next.js + TS     │
-                 └───────┬──────────┘
-                         │
-                         ▼
-                ┌──────────────────┐
-                │     Backend      │
-                │ Node.js + Express│
-                └───────┬──────────┘
-                        │
-                        ▼
-                ┌──────────────────┐
-                │   Supabase DB    │
-                └──────────────────┘
-
-                ┌──────────────────┐
-                │    Keycloak      │
-                │ Auth + Tokens    │
-                └──────────────────┘
-
-               
-
 ---------------------------------------------------------------------------------
 📂 Estructura del Proyecto
 TPI-DS2025/
@@ -125,7 +71,6 @@ Keycloak 24
 🐳 Infraestructura:
 Docker Compose, 
 NGINX (según versión del gateway)
-
 
 ----------------------------------------------------------------------
 🛠️ Instalación y ejecución del proyecto
