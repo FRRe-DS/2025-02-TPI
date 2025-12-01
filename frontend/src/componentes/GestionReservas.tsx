@@ -110,7 +110,7 @@ export default function GestionReservas() {
       {/* CABECERA */}
       <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
         <div>
-            <h2 className="text-2xl font-bold text-[#232B65]">Mis Reservas</h2>
+            <h2 className="text-2xl font-bold text-[#000000]">Mis Reservas</h2>
             <p className="text-sm text-gray-500">Historial y gestión de solicitudes de stock</p>
         </div>
         

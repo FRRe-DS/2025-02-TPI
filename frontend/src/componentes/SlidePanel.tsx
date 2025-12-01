@@ -75,7 +75,7 @@ export default function SlidePanel({
         }}
       >
         <div style={{
-          backgroundColor: '#1f2937',
+          backgroundColor: '#232B65FF',
           color: 'white',
           padding: '20px',
           display: 'flex',

@@ -1,48 +1,56 @@
 "use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FaHome, FaChevronRight } from "react-icons/fa";
 
-// Definimos cómo es cada "miga" o paso
-interface BreadcrumbItem {
-    label: string;
-    href?: string; // Opcional: si no tiene href, es la página actual (texto estático)
-}
+export default function Breadcrumb() {
+  const pathname = usePathname(); // ejemplo: "/dashboard/productos/crear"
 
-interface Props {
-    items: BreadcrumbItem[];
-}
+  // Dividimos el path en partes
+  const segments = pathname
+    .split("/")
+    .filter(Boolean); // ["dashboard", "productos", "crear"]
 
-export default function Breadcrumb({ items }: Props) {
-    return (
+  // Función para capitalizar
+  const formatLabel = (text: string) =>
+    text.charAt(0).toUpperCase() + text.slice(1).replace(/-/g, " ");
+
+  return (
     <nav className="flex items-center text-sm text-gray-600 mb-6">
-      {/* 1. Siempre empezamos con la casita (Home/Dashboard) */}
-        <Link 
-            href="/dashboard" 
-            className="flex items-center hover:text-[#232B65] transition-colors opacity-70 hover:opacity-100"
-            title="Ir al Inicio"
-        >
+      {/* HOME */}
+      <Link
+        href="/dashboard"
+        className="flex items-center hover:text-[#232B65] transition-colors opacity-70 hover:opacity-100"
+      >
         <FaHome className="text-lg" />
-        </Link>
-    
-      {/* 2. Recorremos los items que nos pasaron */}
-        {items.map((item, index) => (
-            <div key={index} className="flex items-center">
-            {/* Separador (la flechita >) */}
+      </Link>
+
+      {/* CONSTRUCCIÓN DINÁMICA */}
+      {segments.map((segment, index) => {
+        const href = "/" + segments.slice(0, index + 1).join("/");
+        const isLast = index === segments.length - 1;
+
+        return (
+          <div key={index} className="flex items-center">
             <FaChevronRight className="mx-3 text-gray-400 text-[10px]" />
-            
-            {item.href ? (
-                // Si tiene link, es un paso anterior navegable
-                <Link href={item.href} className="hover:text-[#232B65] transition-colors font-medium text-gray-500 hover:underline">
-                {item.label}
-                </Link>
+
+            {isLast ? (
+              <span className="text-[#232B65] font-bold cursor-default">
+                {formatLabel(segment)}
+              </span>
             ) : (
-                // Si no tiene link, es la página actual (negrita y sin click)
-                <span className="text-[#232B65] font-bold cursor-default">
-                {item.label}
-                </span>
+              <Link
+                href={href}
+                className="hover:text-[#232B65] transition-colors font-medium
+                           text-gray-500 hover:underline"
+              >
+                {formatLabel(segment)}
+              </Link>
             )}
-            </div>
-        ))}
-        </nav>
-    );
+          </div>
+        );
+      })}
+    </nav>
+  );
 }

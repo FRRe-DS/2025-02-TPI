@@ -9,11 +9,6 @@ export default function PaginaListaProductos() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-              <Breadcrumb 
-                items={[
-                    { label: 'Ver Productos', href: '/producto/lista' }, 
-                ]}
-              />
         {/* Encabezado de la sección */}
         <div className="mb-8 flex items-center gap-3">
           <div className="p-3 bg-[#232B65] rounded-lg shadow-md">
