@@ -180,7 +180,7 @@ Keycloak en: http://localhost:8080
 ----------------------------------------------------------------------------
 📦 Dependencias principales
 
-🟦 Raíz del monorepo
+🟦 Raíz del monorepo:  
 all ^0.0.0
 dotenv ^17.2.3
 flowbite ^4.0.1
@@ -190,7 +190,7 @@ tailwindcss ^4.1.17
 postcss ^8.5.6
 autoprefixer ^10.4.22
 
-🟪 Frontend
+🟪 Frontend: 
 (Next.js, React, TypeScript y estilos)
 react 19.1.0
 react-dom 19.1.0
@@ -200,7 +200,7 @@ flowbite 2.5.2: https://flowbite.com/
 lucide-react 0.554.0
 react-icons 5.4.0
 
-🟩 Backend
+🟩 Backend: 
 (Node + Express + Supabase + Keycloak)
 express 5.1.0
 supabase-js 2.75.0
