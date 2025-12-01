@@ -195,7 +195,7 @@ react 19.1.0
 react-dom 19.1.0
 next 15.5.4
 keycloak-js 26.2.1
-flowbite 2.5.2
+flowbite 2.5.2: https://flowbite.com/ 
 lucide-react 0.554.0
 react-icons 5.4.0
 
@@ -224,3 +224,12 @@ Figma – Diseño UI del frontend](https://www.figma.com/design/VgBFt9bSCxjyVA94
 Tareas divididas por componentes del front/back
 Integración continua manual mediante reuniones semanales
 Control de versiones con Git, utilizando el submódulo general de las API. 
+--------------------------------------------------------------------------------
+🧑‍💻 IA utilizadas🧑‍💻 
+- Chat GPT
+- Gemini
+
+
+
+
+
