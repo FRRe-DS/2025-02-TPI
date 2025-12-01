@@ -78,9 +78,11 @@ IMPORTANTE: Tener Docker Desktop instalado y encendido.
 
 1️⃣ Clonar el repositorio y actualizar dependencias
 En la raíz del proyecto:
+```
 git clone https://github.com/FRRe-DS/2025-02-TPI.git
 git pull
 npm install
+```
 
 2️⃣ Inicializar el submódulo (carpeta de la materia)
 ```
