@@ -15,13 +15,7 @@ export default function AgregarProductoPage() {
 
     return (
         <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <Breadcrumb 
-                    items={[
-                        { label: 'Ver Productos', href: '/producto/lista' },
-                        { label: 'Agregar Producto'},
-                    ]}
-                />        
+            <div className="max-w-4xl mx-auto">      
             {/* Botón Volver */}
             <div className="mb-6">
                 <button onClick={() => router.back()} className="flex items-center text-gray-600 hover:text-[#232B65] transition-colors font-medium">

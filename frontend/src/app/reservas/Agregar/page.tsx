@@ -19,14 +19,6 @@ export default function AgregarReservaPage() {
 return (
         <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-                
-                <Breadcrumb 
-                    items={[
-                        { label: 'Reservas', href: '/reservas/Ver' }, 
-                        { label: 'Nueva Reserva' }                
-                    ]}
-                />
-
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[#232B65]">Registrar Nueva Reserva</h1>
                     <p className="text-gray-600 mt-2">
