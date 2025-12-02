@@ -28,6 +28,23 @@ app.use(session({
   store: memoryStore // <-- Usamos el store importado
 }));
 
+// --- Logging middleware para debug ---
+app.use((req, res, next) => {
+  console.log('🔥 INCOMING REQUEST:', {
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    headers: {
+      authorization: req.headers.authorization,
+      'content-type': req.headers['content-type'],
+      origin: req.headers.origin
+    },
+    query: req.query,
+    body: req.body && Object.keys(req.body).length > 0 ? req.body : 'empty'
+  });
+  next();
+});
+
 // --- Usar el keycloak importado ---
 // Este middleware es el "guardia" que leerá 'keycloak.json'
 app.use(keycloak.middleware({

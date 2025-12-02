@@ -64,7 +64,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost
+        - NEXT_PUBLIC_API_URL=http://localhost/api/v1
         - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
         - NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
         - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
@@ -72,7 +72,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost
+      - NEXT_PUBLIC_API_URL=http://localhost/api/v1
       - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
       - NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
       - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
@@ -90,6 +90,80 @@ services:
       - "80:80"
     depends_on:
       - backend
+      - compras-backend
+      - logistica-backend
+    networks:
+      - ds-network
+
+  # ============================================
+  # GRUPO 1 - COMPRAS
+  # ============================================
+  compras-backend:
+    image: ghcr.io/frre-ds/backend-compras-g04:latest
+    container_name: compras-backend
+    ports:
+      - "5000:8000"
+    environment:
+      - API_GATEWAY_URL=http://api-gateway
+    depends_on:
+      - backend
+      - keycloak
+    networks:
+      - ds-network
+
+  # ============================================
+  # GRUPO 3 - LOGÍSTICA
+  # ============================================
+  logistica-mysql:
+    image: mysql:8.0
+    container_name: logistica-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: shipping_db
+      MYSQL_USER: shipping_user
+      MYSQL_PASSWORD: shipping_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - logistica_mysql_data:/var/lib/mysql
+    networks:
+      - ds-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "shipping_user", "-pshipping_pass"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  logistica-backend:
+    image: ghcr.io/frre-ds/2025-grupo-03-backend-logistica:376779cae5a75e077b5a2a324bcedbd10bf93da1
+    container_name: logistica-backend
+    restart: always
+    ports:
+      - "6000:3010"
+    environment:
+      DB_HOST: logistica-mysql
+      DB_PORT: 3306
+      DB_USERNAME: shipping_user
+      DB_PASSWORD: shipping_pass
+      DB_DATABASE: shipping_db
+    depends_on:
+      logistica-mysql:
+        condition: service_healthy
+    networks:
+      - ds-network
+
+  logistica-api-gateway:
+    image: ghcr.io/frre-ds/2025-grupo-03-api-gateway:6d8d77a0b11bae143fd01c45476ed7155f3499b1
+    container_name: logistica-api-gateway
+    restart: always
+    ports:
+      - "7000:80"
+    environment:
+      BACKEND_URL: http://logistica-backend:3000
+    depends_on:
+      - logistica-backend
     networks:
       - ds-network
 
@@ -99,3 +173,4 @@ networks:
 
 volumes:
   keycloak_data:
+  logistica_mysql_data:
