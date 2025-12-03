@@ -28,7 +28,7 @@ export default function DashboardPage() {
     setPanelAbierto(null);
   };
   return (
-    <div className="">
+    <div className="transition-colors duration-300">
       {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 max-w-7xl mx-auto px-6 w-full">
         {/* TÍTULO PRINCIPAL */}

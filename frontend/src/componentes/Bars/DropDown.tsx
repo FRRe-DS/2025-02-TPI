@@ -1,15 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaUserCircle } from "react-icons/fa";
-import {LogoutButton} from "../Bars/LogoutButton"; 
+import { LogoutButton } from "../Bars/LogoutButton";
+
 export default function AccountDropdown() {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null); // <= REFERENCIA AL DROPDOWN
+  // Cerrar si se hace click fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={menuRef}>
       {/* Botón */}
       <button
         onClick={() => setOpen(!open)}
@@ -31,7 +46,6 @@ export default function AccountDropdown() {
             d="m19 9-7 7-7-7"
           />
         </svg>
-        
       </button>
 
       {/* MENÚ */}
@@ -40,10 +54,9 @@ export default function AccountDropdown() {
           className="absolute right-0 mt-2 w-72 rounded-md shadow-lg border border-[#222244] z-50 text-white"
           style={{ backgroundColor: "#333366" }}
         >
-          {/* Avatar + info */}
           <div className="p-2">
             <div className="flex items-center px-2.5 p-2 space-x-1.5 text-sm bg-[#2a2a59] rounded">
-                <FaUserCircle className="text-4xl text-white" />
+              <FaUserCircle className="text-4xl text-white" />
               <div className="text-sm">
                 <div className="font-medium text-white">Nombre Usuario</div>
                 <div className="truncate text-gray-300">usuario@correo.com</div>
@@ -55,8 +68,8 @@ export default function AccountDropdown() {
             </div>
           </div>
 
-          {/* Lista */}
           <ul className="px-2 pb-2 text-sm font-medium">
+            {/* Opciones del menú 
             <li>
               <Link
                 href="/Configuracion"
@@ -82,9 +95,8 @@ export default function AccountDropdown() {
               >
                 Centro de ayuda
               </Link>
-            </li>
+            </li>*/}
 
-            {/* Línea + Dark mode */}
             <li className="flex items-center w-full p-2 hover:bg-[#2a2a59] rounded mb-1.5">
               <a className="inline-flex items-center cursor-pointer">
                 Dark mode (proximamente)
@@ -96,10 +108,8 @@ export default function AccountDropdown() {
               </label>
             </li>
 
-            {/* Línea separadora */}
             <li className="border-t border-[#222244] pt-1.5"></li>
 
-            {/* Logout */}
             <li>
               <div className="inline-flex items-center w-full p-2 text-red-300 hover:bg-[#2a2a59] rounded">
                 <LogoutButton />
