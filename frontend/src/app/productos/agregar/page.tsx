@@ -10,7 +10,7 @@ export default function AgregarProductoPage() {
     const router = useRouter();
 
     const handleProductoAgregado = () => {
-        router.push('/producto/lista');
+        router.push('/productos/lista');
     };
 
     return (

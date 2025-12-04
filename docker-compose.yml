@@ -1,8 +1,11 @@
 version: '3.8'
 
 services:
+  # ============================================
+  # KEYCLOAK - Basado en configuración de Compras
+  # ============================================
   keycloak-db:
-    image: postgres:15
+    image: postgres:16.2
     container_name: keycloak-db
     environment:
       POSTGRES_DB: keycloak
@@ -10,113 +13,152 @@ services:
       POSTGRES_PASSWORD: keycloak
     volumes:
       - keycloak_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d keycloak -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - ds-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.6
     container_name: keycloak
+    command: start-dev --import-realm
     environment:
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HTTP_PORT: 8080
-      KC_HOSTNAME_STRICT: false
-      KC_HOSTNAME_STRICT_HTTPS: false
-      KC_HTTP_ENABLED: true
-      KC_PROXY: edge
     ports:
-      - "8081:8080"
+      - "8080:8080"
     volumes:
-      - ./2025-TPI/keycloak/realm-config:/opt/keycloak/data/import
+      - ./2025-TPI/keycloak/realm-config:/opt/keycloak/data/import:ro
     depends_on:
-      - keycloak-db
-    command: start-dev --import-realm
+      keycloak-db:
+        condition: service_healthy
     networks:
       - ds-network
 
-  backend:
-    build:
-      context: ./mi-app-backend
-      dockerfile: Dockerfile
+  # ============================================
+  # GRUPO 2 - STOCK (NOSOTROS)
+  # ============================================
+  stock-backend:
+    image: ghcr.io/frre-ds/backend-stock-g02:latest
     container_name: stock-backend
     ports:
       - "4000:4000"
     environment:
-      - NODE_ENV=production
-      - PORT=4000
-      - SUPABASE_URL=https://tznhwyxgkbkhrfjldmfz.supabase.co
-      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6bmh3eXhna2JraHJmamxkbWZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MzcxNjMsImV4cCI6MjA3NTAxMzE2M30.DOcz00RPnRBdDj3rWq9MMT5KUDmcA21KJtT2CWNHwZU
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_REALM=ds-2025-realm
-      - KEYCLOAK_CLIENT_ID=grupo-02
-      - KEYCLOAK_CLIENT_SECRET=grupo-02-secret
+      NODE_ENV: production
+      PORT: 4000
+      SUPABASE_URL: https://tznhwyxgkbkhrfjldmfz.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6bmh3eXhna2JraHJmamxkbWZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MzcxNjMsImV4cCI6MjA3NTAxMzE2M30.DOcz00RPnRBdDj3rWq9MMT5KUDmcA21KJtT2CWNHwZU
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ds-2025-realm
+      KEYCLOAK_CLIENT_ID: grupo-02
+      KEYCLOAK_CLIENT_SECRET: 58536bf8-8501-41c9-b411-786b6d654c25
     depends_on:
       - keycloak
     networks:
       - ds-network
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://localhost/api/v1
-        - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
-        - NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
-        - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
+  stock-frontend:
+    image: ghcr.io/frre-ds/frontend-stock-g02:latest
     container_name: stock-frontend
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost/api/v1
-      - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8081
-      - NEXT_PUBLIC_KEYCLOAK_REALM=ds-2025-realm
-      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=grupo-02
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://stock-backend:4000/api
+      NEXT_PUBLIC_KEYCLOAK_URL: http://keycloak:8080
+      NEXT_PUBLIC_KEYCLOAK_REALM: ds-2025-realm
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: grupo-02
     depends_on:
-      - backend
-    networks:
-      - ds-network
-
-  api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-      - compras-backend
-      - logistica-backend
-    networks:
-      - ds-network
-
-  # ============================================
-  # GRUPO 1 - COMPRAS
-  # ============================================
-  compras-backend:
-    image: ghcr.io/frre-ds/backend-compras-g04:latest
-    container_name: compras-backend
-    ports:
-      - "5000:8000"
-    environment:
-      - API_GATEWAY_URL=http://api-gateway
-    depends_on:
-      - backend
+      - stock-backend
       - keycloak
+    networks:
+      - ds-network
+
+  # ============================================
+  # GRUPO 4 - COMPRAS
+  # ============================================
+  compras-db:
+    image: postgres:16.2
+    container_name: compras_postgres
+    environment:
+      POSTGRES_DB: compras_db
+      POSTGRES_USER: compras_user
+      POSTGRES_PASSWORD: compras_password
+    volumes:
+      - compras_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compras_user -d compras_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ds-network
+
+  compras-backend:
+    image: ghcr.io/frre-ds/backend-compras-g04:v1.0.1
+    container_name: compras-backend
+    environment:
+      SITE_URL: http://localhost
+      APP_PATH_PREFIX: /compras
+      BASE_API_URL: http://nginx/compras/api/
+      PRODUCTOS_API_BASE_URL: http://nginx/stock/api
+      USE_MOCK_APIS: "false"
+      USE_SQLITE: "false"
+      POSTGRES_DB: compras_db
+      POSTGRES_USER: compras_user
+      POSTGRES_PASSWORD: compras_password
+      POSTGRES_HOST: compras-db
+      POSTGRES_PORT: 5432
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      KEYCLOAK_PUBLIC_BASE_URL: http://localhost:8080
+      KEYCLOAK_REALM: ds-2025-realm
+      KEYCLOAK_CLIENT_ID: grupo-04
+      KEYCLOAK_CLIENT_SECRET: 6be1bec1-9472-499f-ab37-883d78f57829
+      KEYCLOAK_EXPECTED_AUDIENCE: account,grupo-04
+      KEYCLOAK_SERVICE_CLIENT_ID: grupo-04
+      KEYCLOAK_SERVICE_CLIENT_SECRET: 6be1bec1-9472-499f-ab37-883d78f57829
+      KEYCLOAK_SERVICE_SCOPE: ""
+      STOCK_API_BASE_URL: http://nginx/stock/
+      LOGISTICA_API_BASE_URL: http://shipping-back:3010
+    command: >
+      /bin/sh -c "
+      echo '🔄 Esperando a PostgreSQL...' &&
+      sleep 5 &&
+      echo '📦 Aplicando migraciones...' &&
+      python manage.py migrate --noinput &&
+      echo '📁 Recolectando archivos estáticos...' &&
+      python manage.py collectstatic --noinput &&
+      echo '🚀 Iniciando Gunicorn...' &&
+      gunicorn Main.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
+    volumes:
+      - compras_static:/app/staticfiles
+      - compras_media:/app/media
+    expose:
+      - "8000"
+    depends_on:
+      compras-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
     networks:
       - ds-network
 
   # ============================================
   # GRUPO 3 - LOGÍSTICA
   # ============================================
-  logistica-mysql:
+  mysql:
     image: mysql:8.0
-    container_name: logistica-mysql
+    container_name: shipping_mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root123
@@ -126,44 +168,57 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - logistica_mysql_data:/var/lib/mysql
-    networks:
-      - ds-network
+      - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "shipping_user", "-pshipping_pass"]
       interval: 3s
       timeout: 5s
       retries: 20
       start_period: 10s
+    networks:
+      - ds-network
 
-  logistica-backend:
-    image: ghcr.io/frre-ds/2025-grupo-03-backend-logistica:376779cae5a75e077b5a2a324bcedbd10bf93da1
-    container_name: logistica-backend
+  shipping-back:
+    image: ghcr.io/frre-ds/2025-grupo-03-backend-logistica:latest
+    container_name: shipping_back
     restart: always
-    ports:
-      - "6000:3010"
     environment:
-      DB_HOST: logistica-mysql
+      DB_HOST: mysql
       DB_PORT: 3306
       DB_USERNAME: shipping_user
       DB_PASSWORD: shipping_pass
       DB_DATABASE: shipping_db
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ds-2025-realm
+      KEYCLOAK_CLIENT_ID: grupo-03
+      KEYCLOAK_CLIENT_SECRET: 21cd6616-6571-4ee7-be29-0f781f77c74e
+    extra_hosts:
+      - "localhost:host-gateway"
     depends_on:
-      logistica-mysql:
+      mysql:
         condition: service_healthy
+    expose:
+      - "3010"
     networks:
       - ds-network
 
-  logistica-api-gateway:
-    image: ghcr.io/frre-ds/2025-grupo-03-api-gateway:6d8d77a0b11bae143fd01c45476ed7155f3499b1
-    container_name: logistica-api-gateway
-    restart: always
+  # ============================================
+  # NGINX - API GATEWAY ÚNICO PARA TODOS
+  # ============================================
+  nginx:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: nginx
     ports:
-      - "7000:80"
-    environment:
-      BACKEND_URL: http://logistica-backend:3000
+      - "80:80"
     depends_on:
-      - logistica-backend
+      - compras-backend
+      - stock-backend
+      - shipping-back
+    volumes:
+      - compras_static:/app/staticfiles:ro
+      - compras_media:/app/media:ro
     networks:
       - ds-network
 
@@ -173,4 +228,7 @@ networks:
 
 volumes:
   keycloak_data:
-  logistica_mysql_data:
+  compras_data:
+  compras_static:
+  compras_media:
+  mysql_data:

@@ -261,7 +261,7 @@ export default function ListaProductos({ actualizar }: Props) {
                     <td className="col-precio">${p.precio}</td>
                     <td><span className={getStockClass(p.stockDisponible)}>{p.stockDisponible}</span></td>
                     <td className="acciones-col">
-                      <button className="link-detalle" onClick={() => router.push(`/producto/detalle/${p.id}`)}>
+                      <button className="link-detalle" onClick={() => router.push(`/productos/detalle/${p.id}`)}>
                         Ver Detalle
                       </button>
                     </td>

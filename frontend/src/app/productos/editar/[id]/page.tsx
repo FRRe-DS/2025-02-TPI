@@ -23,13 +23,13 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
         }
     }, [id]);
 
-    const handleGuardadoExitoso = () => {
+    const handleGuardar = () => {
         // Al guardar, volvemos a la página de detalle de ESTE producto
-        router.push(`/producto/detalle/${id}`);
+        router.push(`/productos/detalle/${id}`);
     };
 
     const handleCancelar = () => {
-        router.push(`/producto/detalle/${id}`);
+        router.push(`/productos/detalle/${id}`);
     };
 
     if (loading) return <div className="p-10 text-center">Cargando datos para editar...</div>;
@@ -43,8 +43,8 @@ export default function EditarProductoPage({ params }: { params: Promise<{ id: s
         <div className="max-w-5xl mx-auto">
             <Breadcrumb 
                     items={[
-                        { label: 'Ver Productos', href: '/producto/lista' }, 
-                        { label: producto.nombre || 'Detalle',href: `/producto/detalle/${id}` },
+                        { label: 'Ver Productos', href: '/productos/lista' }, 
+                        { label: producto.nombre || 'Detalle',href: `/productos/detalle/${id}` },
                         { label: 'Editar Producto' } 
                     ]}
             />

@@ -53,6 +53,8 @@ export const KeycloakProvider = ({ children }: { children: ReactNode }) => {
       keycloak.init({
           onLoad: "check-sso",
           checkLoginIframe: false,
+          enableLogging: false,
+          flow: 'standard',
 
           // Tokens solo si NO venimos de un logout
           token: isLogoutFlow ? undefined : storedToken || undefined,

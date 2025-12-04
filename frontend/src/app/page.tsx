@@ -30,7 +30,7 @@ export default function Page() {
     
     // Autenticación directa con Keycloak usando Direct Access Grants
     try {
-      const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8081'
+      const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080'
       const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'ds-2025-realm'
       const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'grupo-02'
       

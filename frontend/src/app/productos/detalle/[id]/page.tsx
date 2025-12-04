@@ -80,7 +80,7 @@ export default function DetalleProductoPage({
       try {
         await eliminarProducto(producto.id);
         alert("Producto eliminado");
-        router.push("/producto/lista");
+        router.push("/productos/lista");
       } catch (error) {
         alert("Error al eliminar");
       }
@@ -92,8 +92,8 @@ export default function DetalleProductoPage({
     return (
       <div className="detalle-container error">
         <p>Producto no encontrado.</p>
-        <Link href="/producto/lista">
-          <button className="btn-volver">Volver</button>
+        <Link href="/productos/lista">
+          <button className="btn-volver">← Volver</button>
         </Link>
       </div>
     );
@@ -110,6 +110,13 @@ export default function DetalleProductoPage({
   return (
     <div className="detalle-container">
       
+      {/* 2. AQUÍ INCRUSTAMOS EL BREADCRUMB (Antes del título) */}
+      <Breadcrumb 
+        items={[
+            { label: 'Ver Productos', href: '/productos/lista' }, 
+            { label: producto.nombre || 'Detalle' } 
+        ]}
+      />
 
       <h1 className="titulo">{producto.nombre}</h1>
 
@@ -220,7 +227,7 @@ export default function DetalleProductoPage({
 
       {/* BOTONES */}
       <div className="detalle-botones">
-        <button className="btn-editar" onClick={() => router.push(`/producto/editar/${producto.id}`)}>
+        <button className="btn-editar" onClick={() => router.push(`/productos/editar/${producto.id}`)}>
           EDITAR PRODUCTO
         </button>
         <button className="btn-eliminar" onClick={handleEliminar}>

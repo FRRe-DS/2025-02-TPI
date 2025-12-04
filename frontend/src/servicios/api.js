@@ -1,6 +1,8 @@
 // --- archivo: src/servicios/api.js ---
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = typeof window !== 'undefined' 
+  ? 'http://localhost:4000/api'
+  : 'http://stock-backend:4000/api';
 import keycloak from '../lib/keycloak';
 
 /**
@@ -112,25 +114,25 @@ export async function eliminarProducto(productoId) {
 // --- CATEGORÍAS ---
 
 export async function obtenerCategorias() {
-  return fetchConAuth(`/categorias`);
+  return fetchConAuth(`/v1/categorias`);
 }
 
 export async function crearCategoria(categoriaData) {
-  return fetchConAuth(`/categorias`, {
+  return fetchConAuth(`/v1/categorias`, {
     method: 'POST',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function actualizarCategoria(id, categoriaData) {
-  return fetchConAuth(`/categorias/${id}`, {
+  return fetchConAuth(`/v1/categorias/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(categoriaData)
   });
 }
 
 export async function eliminarCategoria(id) {
-  return fetchConAuth(`/categorias/${id}`, {
+  return fetchConAuth(`/v1/categorias/${id}`, {
     method: 'DELETE'
   });
 }
@@ -138,7 +140,7 @@ export async function eliminarCategoria(id) {
 // --- RESERVAS ---
 
 export async function crearReserva(reservaData) {
-  return fetchConAuth(`/reservas`, {
+  return fetchConAuth(`/v1/reservas`, {
     method: 'POST',
     body: JSON.stringify(reservaData)
   });
@@ -155,11 +157,11 @@ export async function obtenerReservas(filtros = {}) {
   params.append('limit', limit.toString());
   if (estado) params.append('estado', estado);
 
-  return fetchConAuth(`/reservas?${params.toString()}`); 
+  return fetchConAuth(`/v1/reservas?${params.toString()}`); 
 }
 
 export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
-  return fetchConAuth(`/reservas/${reservaId}`, {
+  return fetchConAuth(`/v1/reservas/${reservaId}`, {
     method: 'PATCH',
     body: JSON.stringify({ 
       usuarioId: usuarioId, 
@@ -169,7 +171,7 @@ export async function actualizarReserva(reservaId, usuarioId, nuevoEstado) {
 }
 
 export async function cancelarReserva(reservaId, motivo) {
-  return fetchConAuth(`/reservas/${reservaId}`, {
+  return fetchConAuth(`/v1/reservas/${reservaId}`, {
     method: 'DELETE',
     body: JSON.stringify({ motivo: motivo }) 
   });

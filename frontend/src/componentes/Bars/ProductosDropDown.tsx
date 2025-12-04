@@ -49,7 +49,7 @@ export default function ProductosDropdown() {
           {/* Productos */}
           <div className="px-2 py-1 text-xs opacity-70">Productos</div>
           <Link
-            href="/producto/lista"
+            href="/productos/lista"
             className="flex items-center gap-2 p-2 rounded hover:bg-white/10 transition"
           >
             <FaBox />
@@ -57,7 +57,7 @@ export default function ProductosDropdown() {
           </Link>
 
           <Link
-            href="/producto/agregar"
+            href="/productos/agregar"
             className="flex items-center gap-2 p-2 rounded hover:bg-white/10 transition"
           >
             <FaPlus />

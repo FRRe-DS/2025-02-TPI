@@ -61,7 +61,7 @@ import authRouter from './Rutas/authRoutes.js';
 // --- Montar Rutas ---
 app.use('/auth', authRouter);
 app.use('/api/v1/reservas', reservasRouter);
-app.use('/api/productos', productosRouter);
+app.use('/api/v1/productos', productosRouter);
 app.use('/api/v1/categorias', categoriasRouter);
 
 // (HEALTH CHECK)
