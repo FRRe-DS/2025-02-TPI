@@ -46,8 +46,8 @@ export default function Navbar() {
       {/* DERECHA */}
      <div className="flex items-center gap-4">
   
-  {/* Campana */}
-  <FaBell className="text-xl cursor-pointer hover:text-gray-300" />
+  {/* Campana 
+  <FaBell className="text-xl cursor-pointer hover:text-gray-300" />*/}
 
   {/* Línea vertical separadora */}
   <div className="h-8 w-px bg-white opacity-30"></div>

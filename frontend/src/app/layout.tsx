@@ -7,6 +7,7 @@ import { usePathname, redirect } from "next/navigation";
 import Footer from "../componentes/Bars/Footer";
 import Breadcrumb from "@/componentes/Bars/Breadcrumb";
 
+
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { authenticated, loading } = useAuth();
@@ -30,7 +31,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       )}
 
       {/* ⭐ El main ocupa el espacio sobrante */}
-      <main className="flex-1 bg-white">
+      <main className="flex-1">
         {children}
       </main>
 
@@ -44,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className="flex flex-col min-h-screen">
         <KeycloakProvider>
-          <LayoutContent>{children}</LayoutContent>
+            <LayoutContent>{children}</LayoutContent>
         </KeycloakProvider>
       </body>
     </html>
