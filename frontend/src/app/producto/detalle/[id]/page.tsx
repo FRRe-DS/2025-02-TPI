@@ -110,13 +110,6 @@ export default function DetalleProductoPage({
   return (
     <div className="detalle-container">
       
-      {/* 2. AQUÍ INCRUSTAMOS EL BREADCRUMB (Antes del título) */}
-      <Breadcrumb 
-        items={[
-            { label: 'Ver Productos', href: '/producto/lista' }, 
-            { label: producto.nombre || 'Detalle' } 
-        ]}
-      />
 
       <h1 className="titulo">{producto.nombre}</h1>
 

@@ -31,7 +31,7 @@ export const LogoutButton = () => {
     <button
       onClick={handleLogout}
       style={{
-        backgroundColor: '#D32F2F',
+        backgroundColor: '#2a2a59',
         color: 'white',
         padding: '8px 14px',
         borderRadius: '8px',
