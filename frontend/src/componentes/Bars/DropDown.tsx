@@ -97,16 +97,7 @@ export default function AccountDropdown() {
               </Link>
             </li>*/}
 
-            <li className="flex items-center w-full p-2 hover:bg-[#2a2a59] rounded mb-1.5">
-              <a className="inline-flex items-center cursor-pointer">
-                Dark mode (proximamente)
-              </a>
 
-              <label className="inline-flex items-center cursor-pointer ms-auto">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="relative w-9 h-5 bg-gray-500 rounded-full peer-checked:bg-blue-600 after:absolute after:top-[2px] after:start-[2px] after:bg-white after:h-4 after:w-4 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
-              </label>
-            </li>
 
             <li className="border-t border-[#222244] pt-1.5"></li>
 
